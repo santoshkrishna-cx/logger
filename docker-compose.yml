@@ -1,0 +1,51 @@
+# Production-style stack: Postgres, API, scheduled IBKR sync worker, and the web app behind nginx.
+# Put TLS in front of the "web" service (Caddy, a cloud load balancer, or certbot on the host).
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tradelog
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: tradelog
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tradelog"]
+      interval: 5s
+      retries: 10
+
+  migrate:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    env_file: .env
+    environment:
+      DATABASE_URL: postgres://tradelog:${POSTGRES_PASSWORD}@db:5432/tradelog
+    command: ["npx", "tsx", "scripts/migrate.ts"]
+    depends_on: { db: { condition: service_healthy } }
+
+  api:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://tradelog:${POSTGRES_PASSWORD}@db:5432/tradelog
+    depends_on: { migrate: { condition: service_completed_successfully } }
+
+  worker:
+    build: { context: ., dockerfile: apps/api/Dockerfile }
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://tradelog:${POSTGRES_PASSWORD}@db:5432/tradelog
+    command: ["npx", "tsx", "src/worker.ts"]
+    depends_on: { migrate: { condition: service_completed_successfully } }
+
+  web:
+    build: { context: ., dockerfile: apps/web/Dockerfile }
+    restart: unless-stopped
+    ports: ["8080:80"]
+    depends_on: [api]
+
+volumes:
+  pgdata:

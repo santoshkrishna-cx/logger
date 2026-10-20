@@ -1,0 +1,10 @@
+<FlexQueryResponse queryName="tradelog-today" type="TCF">
+ <FlexStatements count="1">
+  <FlexStatement accountId="U1110002">
+   <TradeConfirms>
+    <TradeConfirm accountId="U1110002" acctAlias="anilsub02" assetCategory="OPT" description="SPXW 21OCT26 5920 C" conid="7010" underlyingSymbol="SPX" multiplier="100" execID="0009.01" dateTime="20261021;094000" quantity="10" price="3.00" commission="-8.2" netCash="-3008.2" buySell="BUY" code="O"/>
+    <TradeConfirm accountId="U1110002" acctAlias="anilsub02" assetCategory="OPT" description="SPXW 21OCT26 5920 C" conid="7010" underlyingSymbol="SPX" multiplier="100" execID="0009.02" dateTime="20261021;095500" quantity="-10" price="3.80" commission="-8.2" netCash="3791.8" buySell="SELL" code="C;P"/>
+   </TradeConfirms>
+  </FlexStatement>
+ </FlexStatements>
+</FlexQueryResponse>

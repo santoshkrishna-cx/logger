@@ -1,0 +1,33 @@
+<FlexQueryResponse queryName="tradelog-activity" type="AF">
+ <FlexStatements count="2">
+  <FlexStatement accountId="U1110002" fromDate="20261020" toDate="20261020" period="LastBusinessDay">
+   <EquitySummaryInBase>
+    <EquitySummaryByReportDateInBase accountId="U1110002" acctAlias="anilsub02" reportDate="20261020" cash="51071.4" total="51071.4"/>
+   </EquitySummaryInBase>
+   <CashReport>
+    <CashReportCurrency accountId="U1110002" acctAlias="anilsub02" currency="BASE_SUMMARY" fromDate="20261020" toDate="20261020" startingCash="50000" endingCash="51071.4"/>
+   </CashReport>
+   <Trades>
+    <Trade accountId="U1110002" acctAlias="anilsub02" currency="USD" assetCategory="OPT" symbol="SPXW  261020C05910000" description="SPXW 20OCT26 5910 C" conid="7001" underlyingSymbol="SPX" multiplier="100" tradeID="11" ibExecID="0001.01" dateTime="20261020;093805" tradeDate="20261020" quantity="10" tradePrice="4.4" ibCommission="-8.2" netCash="-4408.2" fifoPnlRealized="0" buySell="BUY" openCloseIndicator="O" levelOfDetail="EXECUTION"/>
+    <Trade accountId="U1110002" acctAlias="anilsub02" currency="USD" assetCategory="OPT" symbol="SPXW  261020C05910000" description="SPXW 20OCT26 5910 C" conid="7001" underlyingSymbol="SPX" multiplier="100" tradeID="12" ibExecID="0001.02" dateTime="20261020;094751" tradeDate="20261020" quantity="-5" tradePrice="5.45" ibCommission="-4.1" netCash="2720.9" fifoPnlRealized="516.8" buySell="SELL" openCloseIndicator="C" levelOfDetail="EXECUTION"/>
+    <Trade accountId="U1110002" acctAlias="anilsub02" currency="USD" assetCategory="OPT" symbol="SPXW  261020C05910000" description="SPXW 20OCT26 5910 C" conid="7001" underlyingSymbol="SPX" multiplier="100" tradeID="13" ibExecID="0001.03" dateTime="20261020;095930" tradeDate="20261020" quantity="-5" tradePrice="5.30" ibCommission="-4.1" netCash="2645.9" fifoPnlRealized="441.8" buySell="SELL" openCloseIndicator="C" levelOfDetail="EXECUTION"/>
+    <Trade accountId="U1110002" acctAlias="anilsub02" currency="USD" assetCategory="OPT" symbol="SPXW  261020P05900000" description="SPXW 20OCT26 5900 P" conid="7002" underlyingSymbol="SPX" multiplier="100" tradeID="14" ibExecID="0001.04" dateTime="20261020;105140" tradeDate="20261020" quantity="10" tradePrice="3.10" ibCommission="-8.2" netCash="-3108.2" fifoPnlRealized="0" buySell="BUY" openCloseIndicator="O" levelOfDetail="EXECUTION"/>
+    <Trade accountId="U1110002" acctAlias="anilsub02" currency="USD" assetCategory="OPT" symbol="SPXW  261020P05900000" description="SPXW 20OCT26 5900 P" conid="7002" underlyingSymbol="SPX" multiplier="100" tradeID="15" ibExecID="0001.05" dateTime="20261020;110622" tradeDate="20261020" quantity="-10" tradePrice="2.35" ibCommission="-8.2" netCash="2341.8" fifoPnlRealized="-766.4" buySell="SELL" openCloseIndicator="C" levelOfDetail="EXECUTION"/>
+    <Trade accountId="U1110002" acctAlias="anilsub02" currency="USD" assetCategory="OPT" symbol="SPXW  261020P05900000" description="SPXW 20OCT26 5900 P" conid="7002" levelOfDetail="ORDER" quantity="-10" tradePrice="2.35" dateTime="20261020;110622"/>
+   </Trades>
+  </FlexStatement>
+  <FlexStatement accountId="U2220001" fromDate="20261020" toDate="20261020">
+   <CashReport>
+    <CashReportCurrency accountId="U2220001" acctAlias="anilsub01" currency="BASE_SUMMARY" fromDate="20261020" toDate="20261020" startingCash="52000" endingCash="50851.8"/>
+   </CashReport>
+   <OpenPositions>
+    <OpenPosition accountId="U2220001" acctAlias="anilsub01" reportDate="20261020" conid="8001" symbol="MU    261024C00190000" description="MU 24OCT26 190 C" position="5" markPrice="3.10" positionValue="1550" costBasisMoney="1204.1" fifoPnlUnrealized="345.9" levelOfDetail="SUMMARY"/>
+   </OpenPositions>
+   <Trades>
+    <Trade accountId="U2220001" acctAlias="anilsub01" assetCategory="OPT" description="META 24OCT26 730 C" conid="8002" underlyingSymbol="META" multiplier="100" ibExecID="0002.01" dateTime="20261020;095214" quantity="-5" tradePrice="9.65" ibCommission="-4.1" netCash="4820.9" fifoPnlRealized="718.7" buySell="SELL" openCloseIndicator="C" levelOfDetail="EXECUTION"/>
+    <Trade accountId="U2220001" acctAlias="anilsub01" assetCategory="OPT" description="MU 24OCT26 190 C" conid="8001" underlyingSymbol="MU" multiplier="100" ibExecID="0002.02" dateTime="20261020;103012" quantity="10" tradePrice="2.40" ibCommission="-8.2" netCash="-2408.2" fifoPnlRealized="0" buySell="BUY" openCloseIndicator="O" levelOfDetail="EXECUTION"/>
+    <Trade accountId="U2220001" acctAlias="anilsub01" assetCategory="OPT" description="MU 24OCT26 190 C" conid="8001" underlyingSymbol="MU" multiplier="100" ibExecID="0002.03" dateTime="20261020;104637" quantity="-5" tradePrice="3.35" ibCommission="-4.1" netCash="1670.9" fifoPnlRealized="466.8" buySell="SELL" openCloseIndicator="C" levelOfDetail="EXECUTION"/>
+   </Trades>
+  </FlexStatement>
+ </FlexStatements>
+</FlexQueryResponse>
