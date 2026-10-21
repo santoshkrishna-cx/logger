@@ -8,6 +8,21 @@ Only two Google accounts can sign in. Everyone else is turned away.
 
 Full specification: [`docs/Tradelog_Project_Docs.docx`](docs/Tradelog_Project_Docs.docx) (PRD, TRD, App Flow, UI/UX brief, Backend Schema, Implementation Plan, Project Plan).
 
+## Quick start: run it on your computer
+
+You need [Docker Desktop](https://www.docker.com/products/docker-desktop/) and a Google OAuth client (5 minutes, steps under "Google sign-in" below; register `http://localhost:8080/auth/google/callback` as the redirect URI).
+
+```
+./scripts/local-up.sh            # macOS, Linux, or Git Bash on Windows
+.\scripts\local-up.ps1           # Windows PowerShell
+```
+
+The first run creates `.env` with generated secrets, asks for the Google client ID and secret, builds everything and waits until it's up. Then open **http://localhost:8080** and sign in with `santosh.krishna0909@gmail.com` or `mailanilkumar@gmail.com`. No other Google account gets in.
+
+- `--demo` (`-Demo` on Windows) also loads a month of made-up sample trades so every page has something to show.
+- `--reset` (`-Reset`) stops everything and wipes the local database. Do this before importing your real trades if you loaded the sample.
+- Real trades: Import page > drop an IBKR Flex file, or add the Flex token and query IDs to `.env` and run `docker compose up -d` again so the worker syncs on schedule.
+
 ## Stack
 
 | Layer | Choice |
@@ -40,12 +55,12 @@ docs               Project docs and IBKR setup
 
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, then APIs & Services > OAuth consent screen. Choose **External**, publishing status **Testing**, and add both Google addresses as test users. Testing mode is a second lock: Google itself refuses anyone not on that list.
 2. Credentials > Create credentials > OAuth client ID > Web application.
-   - Authorized JavaScript origin: your site, e.g. `https://tradelog.example.com` (and `http://localhost:5173` for development)
-   - Authorized redirect URI: `https://tradelog.example.com/auth/google/callback` (and `http://localhost:5173/auth/google/callback`)
+   - Authorized JavaScript origins: `http://localhost:8080` (local Docker), `http://localhost:5173` (dev servers), and later your droplet's `https://` address
+   - Authorized redirect URIs: the same origins followed by `/auth/google/callback`
 3. Put the client ID and secret in `.env`, and list the two people:
 
 ```
-ALLOWED_USERS=santosh@example.com:anilsub02,anil@example.com:anilsub01
+ALLOWED_USERS=santosh.krishna0909@gmail.com:anilsub02,mailanilkumar@gmail.com:anilsub01
 ```
 
 The API checks this list at sign-in and again on every request, so removing an address revokes access immediately.
@@ -91,14 +106,14 @@ DATABASE_URL=postgres://.../tradelog_test npm run smoke --workspace @tradelog/ap
 
 `smoke` runs 29 end-to-end checks against a throwaway database: the sign-in gate, who may write what, joint lesson sign-off, imports and re-imports, the next-morning P&L upgrade, removal of erroneous trades, the dashboard and analytics. It writes test data; never point it at production.
 
-## Deploying
+## Deploying to a DigitalOcean droplet
 
-```
-cp .env.example .env              # set POSTGRES_PASSWORD, SESSION_SECRET, Google and Flex values, APP_ORIGIN
-docker compose up -d --build
-```
-
-The web container listens on port 8080. Put TLS in front of it and set `NODE_ENV=production` (the compose file does) so session cookies are marked secure. The Flex token should be IP-locked to this server.
+1. Create an Ubuntu droplet (the smallest Basic size is enough for two people) and reserve a static IP for it. Install Docker: `curl -fsSL https://get.docker.com | sh`.
+2. Point a domain or subdomain at the droplet. Put Caddy (or nginx with certbot) on the host for HTTPS, proxying to `localhost:8080`.
+3. Copy the repo up, copy your `.env`, then change: `COOKIE_SECURE=true`, `APP_ORIGIN` and `GOOGLE_CALLBACK_URL` to the `https://` address, and a new `SESSION_SECRET` and `POSTGRES_PASSWORD`.
+4. In Google Cloud, add the `https://` origin and callback to the OAuth client.
+5. Generate the IBKR Flex token locked to the droplet's static IP and put it in `.env`.
+6. `docker compose up -d --build`. Back up the `pgdata` volume (DigitalOcean droplet backups or a nightly `pg_dump`).
 
 ## How the numbers are built
 

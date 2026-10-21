@@ -1,5 +1,6 @@
 # Production-style stack: Postgres, API, scheduled IBKR sync worker, and the web app behind nginx.
-# Put TLS in front of the "web" service (Caddy, a cloud load balancer, or certbot on the host).
+# Locally: open http://localhost:8080. On the droplet: put TLS in front of the "web" service
+# (Caddy or certbot on the host) and set COOKIE_SECURE=true.
 services:
   db:
     image: postgres:16-alpine

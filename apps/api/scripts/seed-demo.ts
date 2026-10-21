@@ -1,4 +1,4 @@
-/** Dev only: loads a sample Flex file and a few journal entries into a local database, and prints login cookies. */
+/** Dev only: loads a sample Flex file and a few journal entries into a local database. PRINT_COOKIES=1 also prints test login cookies. */
 import "dotenv/config";
 import { readFileSync } from "node:fs";
 import { createHmac, randomUUID } from "node:crypto";
@@ -13,15 +13,19 @@ if (!file) { console.error("usage: tsx scripts/seed-demo.ts <flex.xml>"); proces
 const sign = (sid: string) => "s:" + sid + "." + createHmac("sha256", config.sessionSecret).update(sid).digest("base64").replace(/=+$/, "");
 const users: Record<string, string> = {};
 const cookies: Record<string, string> = {};
+const sids: string[] = [];
 for (const [email, account] of config.allowedUsers) {
   const [u] = await q<{ id: string }>("INSERT INTO users (email, account_code, name) VALUES ($1,$2,$3) ON CONFLICT (email) DO UPDATE SET account_code=EXCLUDED.account_code RETURNING id", [email, account, account === "anilsub02" ? "Santosh Krishna" : "Anil"]);
   users[account] = u.id;
   const sid = randomUUID();
   await q(`INSERT INTO "session" (sid, sess, expire) VALUES ($1,$2, now() + interval '7 days')`, [sid, JSON.stringify({ cookie: { originalMaxAge: 6048e5, httpOnly: true, path: "/" }, passport: { user: u.id } })]);
   cookies[account] = sign(sid);
+  sids.push(sid);
 }
 const r = await ingest(parseFlex(readFileSync(file, "utf8")), "file", { commit: true });
 console.error(`imported ${r.added} fills`);
+// Sample files carry made-up U-numbers; forget them so real reports still match by alias or mapping.
+await q("UPDATE accounts SET ibkr_account_id = NULL");
 const ctx = await loadContext();
 const rules = ctx.rules;
 const day = ctx.trades.filter(t => t.closeDate === "2026-10-20" || t.openDate === "2026-10-20");
@@ -45,5 +49,6 @@ for (const t of ctx.trades.filter(t => t.closeDate && t.closeDate < "2026-10-20"
   await q("INSERT INTO rule_ratings (trade_key, rule_id, value, rated_by) VALUES ($1,$2,$3,$4) ON CONFLICT DO NOTHING", [t.key, rules[0].id, 2, users[t.account]]);
 }
 await q(`UPDATE settings SET value='{"anilsub01": 800, "anilsub02": 800}' WHERE key='daily_loss_limit'`);
-console.log(JSON.stringify(cookies));
+if (process.env.PRINT_COOKIES) console.log(JSON.stringify(cookies));
+else await q(`DELETE FROM "session" WHERE sid = ANY($1)`, [sids]);
 await pool.end();

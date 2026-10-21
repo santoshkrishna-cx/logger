@@ -21,6 +21,8 @@ function parseAllowed(v: string): Map<string, string> {
 export const config = {
   port: Number(process.env.PORT ?? 4000),
   production: process.env.NODE_ENV === "production",
+  // Secure cookies need HTTPS. Defaults to on in production; set COOKIE_SECURE=false to test over plain http://localhost.
+  cookieSecure: process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === "true" : process.env.NODE_ENV === "production",
   databaseUrl: required("DATABASE_URL"),
   sessionSecret: required("SESSION_SECRET"),
   appOrigin: process.env.APP_ORIGIN ?? "http://localhost:5173",

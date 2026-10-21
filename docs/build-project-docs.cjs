@@ -470,22 +470,24 @@ const sched = [
   ["1", "Setup", "Place repo in repos folder and push to GitHub", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "TBD — repo path and GitHub org; Claude Code can do this from the zip"],
   ["2", "Database", "Write migrations 001 and 002", "AI Agent", "0.5d", T, T, T, T, "Done", "Verified on PostgreSQL 16"],
   ["3", "Auth", "Google allow-list auth and sessions", "AI Agent", "1d", T, T, T, T, "Done", "Refusal and 401 paths covered by smoke test"],
-  ["3", "Auth", "Create Google OAuth client and Testing-mode consent screen", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "Add both Google addresses as test users"],
-  ["3", "Auth", "Confirm both Google addresses for ALLOWED_USERS", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "TBD — Anil's Google address; is Santosh's santosh.krishna@cattlexpert.com?"],
+  ["3", "Auth", "Create Google OAuth client and Testing-mode consent screen", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "Add both Gmail addresses as test users; register http://localhost:8080/auth/google/callback first"],
+  ["3", "Auth", "Confirm both Google addresses for ALLOWED_USERS", "Santosh", "0.5d", "2026-10-21", "2026-10-21", T, T, "Done", "santosh.krishna0909@gmail.com (anilsub02), mailanilkumar@gmail.com (anilsub01)"],
   ["4", "Trade engine", "Flex parser, trade builder, scoring, unit tests", "AI Agent", "1d", T, T, T, T, "Done", "13 unit tests pass"],
   ["5", "Import and IBKR sync", "Ingest, file import, Flex client, worker", "AI Agent", "1d", T, T, T, T, "Done", "Re-import and next-morning upgrade verified"],
   ["5", "Import and IBKR sync", "Set aliases, create both Flex queries, generate IP-locked token", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "Follow docs/ibkr-flex-setup.md; parallel with Auth tasks"],
-  ["5", "Import and IBKR sync", "Confirm one query covers both sub-accounts", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "If not, add a second pair of query IDs"],
+  ["5", "Import and IBKR sync", "Confirm one query covers both sub-accounts", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "Santosh will configure both queries to cover both accounts"],
   ["6", "Log and journal", "Log endpoints, journal permissions, trade ticket", "AI Agent", "1d", T, T, T, T, "Done", ""],
   ["7", "Lessons", "Joint sign-off flow and Lessons page", "AI Agent", "0.5d", T, T, T, T, "Done", "100% target tracked"],
   ["8", "Dashboard", "Period figures, drill-down, charts, positions", "AI Agent", "1d", T, T, T, T, "Done", ""],
   ["9", "Analytics", "Breakdowns, equity curve, leaks, Rules and Settings pages", "AI Agent", "1d", T, T, T, T, "Done", ""],
-  ["9", "Analytics", "Agree rulebook, P&L thresholds and daily loss limits", "Santosh, Anil", "0.5d", "2026-10-22", "2026-10-22", "—", "—", "Not Started", "Defaults $50 scratch, $500 big; loss limit unset"],
+  ["9", "Analytics", "Agree rulebook, P&L thresholds and daily loss limits", "Santosh, Anil", "0.5d", "2026-10-22", "2026-10-22", T, T, "Done", "Defaults kept: $50 scratch, $500 big, starter rules, loss limit unset"],
   ["10", "UI Polish", "Band legend, dark theme, phone layouts, empty states", "AI Agent", "0.5d", T, T, T, T, "Done", "Reviewed at 390px and 1440px"],
   ["11", "Testing", "End-to-end smoke test", "AI Agent", "0.5d", T, T, T, T, "Done", "29 checks pass"],
+  ["11", "Testing", "One-command local Docker start (local-up scripts)", "AI Agent", "0.5d", T, T, T, T, "Done", "Added in v2; images and script verified in workspace"],
+  ["11", "Testing", "Test locally on Docker Desktop", "Santosh", "1d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "Added in v2; run scripts/local-up with --demo, then --reset before real imports"],
   ["11", "Testing", "One week of live trades reconciled to IBKR", "Santosh, Anil", "5d", "2026-10-26", "2026-10-30", "—", "—", "Not Started", "Needs Deploy done first"],
-  ["12", "Deploy", "Choose host and provision server with static IP", "Santosh", "1d", "2026-10-22", "2026-10-22", "—", "—", "Not Started", "TBD — OVH, Azure or new VPS? Domain?"],
-  ["12", "Deploy", "Deploy with Docker Compose, TLS and production redirect URI", "AI Agent", "0.5d", "2026-10-23", "2026-10-23", "—", "—", "Not Started", "Depends on host and DNS"],
+  ["12", "Deploy", "Choose host and provision server with static IP", "Santosh", "1d", "2026-10-22", "2026-10-22", T, "—", "In Progress", "DigitalOcean droplet chosen; Santosh provisions after local testing. TBD — domain?"],
+  ["12", "Deploy", "Deploy with Docker Compose, TLS and production redirect URI", "Santosh", "0.5d", "2026-10-23", "2026-10-23", "—", "—", "Not Started", "Owner changed to Santosh in v2; steps in README > Deploying to a DigitalOcean droplet"],
   ["12", "Deploy", "First scheduled Activity sync succeeds", "Reviewer", "0.5d", "2026-10-26", "2026-10-26", "—", "—", "Not Started", "06:00 ET Monday run covers Friday"]
 ];
 const plan = [
@@ -493,7 +495,7 @@ const plan = [
   purpose("Living schedule — phases, activities, owners, durations, and dates, updated after every round of progress."),
   h2("07.1 — Plan Metadata"),
   kv([
-    ["Plan Version", "v1"],
+    ["Plan Version", "v2"],
     ["Last Updated", T],
     ["Project Start Date", `${T} (assumed — confirm)`],
     ["Target Launch Date", "2026-11-02 (assumed — confirm; follows one week of live reconciliation)"],
@@ -513,12 +515,12 @@ const plan = [
     ["Import and IBKR sync complete", "2026-10-21", "In Progress", "Code done; Flex queries and token to create"],
     ["Log, Lessons, Dashboard, Analytics complete", T, "Done", ""],
     ["UI Polish complete", T, "Done", ""],
-    ["Deployed", "2026-10-23", "Not Started", "Host TBD"],
+    ["Deployed", "2026-10-23", "Not Started", "DigitalOcean droplet; Santosh sets it up"],
     ["Testing complete (live reconciliation)", "2026-10-30", "Not Started", ""],
     ["Launch", "2026-11-02", "Not Started", "Assumed — confirm"]
   ], [3, 1.3, 1.3, 4], LANDSCAPE_W),
   h2("07.4 — Change Log"),
-  grid(["Version", "Date", "Change Summary"], [["v1", T, "Initial plan created"]], [1, 1.5, 8], LANDSCAPE_W)
+  grid(["Version", "Date", "Change Summary"], [["v1", T, "Initial plan created"], ["v2", T, "Confirmed Gmail sign-in addresses and kept default thresholds (Done); chose DigitalOcean with Santosh owning deploy; added local Docker start (Done) and local testing (Not Started)."]], [1, 1.5, 8], LANDSCAPE_W)
 ];
 
 // ---------------------------------------------------------------- assemble
@@ -545,7 +547,7 @@ const doc = new Document({
       children: [
         new Paragraph({ spacing: { before: 1800, after: 120 }, children: [new TextRun({ text: "Tradelog", bold: true, size: 64, font: FONT, color: "16202E" })] }),
         new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "Project Docs: PRD, TRD, App Flow, UI/UX Design Brief, Backend Schema, Implementation Plan, Project Plan", size: 26, font: FONT, color: "2A4D8F" })] }),
-        new Paragraph({ spacing: { after: 600 }, children: [new TextRun({ text: `Version v1  |  ${T}  |  Owner: Santosh Krishna`, size: 20, font: FONT, color: "5B6676" })] }),
+        new Paragraph({ spacing: { after: 600 }, children: [new TextRun({ text: `Version v2  |  ${T}  |  Owner: Santosh Krishna`, size: 20, font: FONT, color: "5B6676" })] }),
         new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "Contents", bold: true, size: 28, font: FONT })] }),
         new TableOfContents("Contents", { hyperlink: true, headingStyleRange: "1-1" }),
         new Paragraph({ spacing: { before: 200 }, children: [new TextRun({ text: "Open Word's References > Update Table to refresh page numbers.", italics: true, size: 18, color: "5B6676", font: FONT })] }),
