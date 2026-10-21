@@ -1,6 +1,6 @@
-# IBKR Flex setup for Tradelog
+# IBKR Flex setup for Logger
 
-Tradelog reads two saved Flex queries through IBKR's Flex Web Service. Both are read-only; nothing in Tradelog can place orders or move money.
+Logger reads two saved Flex queries through IBKR's Flex Web Service. Both are read-only; nothing in Logger can place orders or move money.
 
 ## 1. Name the sub-accounts
 

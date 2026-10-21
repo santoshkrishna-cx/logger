@@ -84,7 +84,7 @@ export function ImportPage() {
           </table>
           {preview.unmatched.length > 0 && (
             <div style={{ marginTop: 12 }}>
-              <p>These IBKR accounts aren’t matched yet. Say whose they are once and Tradelog remembers.</p>
+              <p>These IBKR accounts aren’t matched yet. Say whose they are once and Logger remembers.</p>
               {preview.unmatched.map(u => (
                 <div key={u.ibkrAccount} className="controls" style={{ marginBottom: 6 }}>
                   <b style={{ minWidth: 120 }}>{u.ibkrAccount || u.alias}</b><span className="muted">{u.fills} fills</span>

@@ -1,4 +1,4 @@
-import { periodRange, r2, shiftPeriod, todayET, type Period } from "@tradelog/core";
+import { periodRange, r2, shiftPeriod, todayET, type Period } from "@logger/core";
 import { Router } from "express";
 import { z } from "zod";
 import { q } from "../db.js";

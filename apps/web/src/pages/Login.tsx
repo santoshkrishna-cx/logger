@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 
 const MESSAGES: Record<string, string> = {
-  "not-allowed": "Tradelog is private to Santosh and Anil, and that Google account isn’t one of theirs. Sign in with the account you gave Santosh.",
+  "not-allowed": "Logger is private to Santosh and Anil, and that Google account isn’t one of theirs. Sign in with the account you gave Santosh.",
   unverified: "Google hasn’t verified that email address yet. Verify it with Google, then sign in again."
 };
 
@@ -11,7 +11,7 @@ export function LoginPage() {
   return (
     <main className="login">
       <div className="panel">
-        <h1>Tradelog</h1>
+        <h1>Logger</h1>
         <p className="lede">The shared trade journal for Santosh and Anil.</p>
         {err && <p className="error" role="alert">{MESSAGES[err] ?? "Sign-in didn’t complete. Try again."}</p>}
         <a className="gbtn" href="/auth/google">

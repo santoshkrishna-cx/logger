@@ -2,7 +2,7 @@
 # Runs on the droplet, called by the Deploy workflow. Pulls the new images, migrates, restarts,
 # checks health, and rolls back to the previous tag if the new version doesn't come up.
 set -euo pipefail
-cd /opt/tradelog
+cd /opt/logger
 : "${TAG:?}" "${IMAGE_PREFIX:?}"
 COMPOSE="docker compose -f docker-compose.prod.yml --env-file .env"
 PREV_TAG="$(cat .deployed_tag 2>/dev/null || true)"
@@ -26,7 +26,7 @@ healthy() {
   return 1
 }
 
-echo "Deploying $IMAGE_PREFIX/tradelog-*:$TAG (previous: ${PREV_TAG:-none})"
+echo "Deploying $IMAGE_PREFIX/logger-*:$TAG (previous: ${PREV_TAG:-none})"
 if up "$TAG" && healthy; then
   echo "$TAG" > .deployed_tag
   docker image prune -af --filter "until=168h" >/dev/null || true

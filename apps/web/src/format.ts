@@ -1,4 +1,4 @@
-import { BAND_LABELS, MONTHS, type PnlBand } from "@tradelog/core";
+import { BAND_LABELS, MONTHS, type PnlBand } from "@logger/core";
 
 export function money(n: number | null | undefined, opts: { sign?: boolean; cents?: boolean } = {}) {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";

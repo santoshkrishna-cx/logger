@@ -47,7 +47,7 @@ jobs:
           context: .
           file: apps/api/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.prefix }}/tradelog-api:${{ steps.meta.outputs.tag }},${{ steps.meta.outputs.prefix }}/tradelog-api:latest
+          tags: ${{ steps.meta.outputs.prefix }}/logger-api:${{ steps.meta.outputs.tag }},${{ steps.meta.outputs.prefix }}/logger-api:latest
           cache-from: type=gha,scope=api
           cache-to: type=gha,mode=max,scope=api
       - name: Build and push web image
@@ -56,7 +56,7 @@ jobs:
           context: .
           file: apps/web/Dockerfile
           push: true
-          tags: ${{ steps.meta.outputs.prefix }}/tradelog-web:${{ steps.meta.outputs.tag }},${{ steps.meta.outputs.prefix }}/tradelog-web:latest
+          tags: ${{ steps.meta.outputs.prefix }}/logger-web:${{ steps.meta.outputs.tag }},${{ steps.meta.outputs.prefix }}/logger-web:latest
           cache-from: type=gha,scope=web
           cache-to: type=gha,mode=max,scope=web
 
@@ -66,7 +66,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: production
-      url: ${{ vars.TRADELOG_URL }}
+      url: ${{ vars.LOGGER_URL }}
     permissions:
       contents: read
       packages: read
@@ -82,7 +82,7 @@ jobs:
       - name: Copy deploy files
         run: |
           scp deploy/docker-compose.prod.yml deploy/Caddyfile deploy/remote-deploy.sh \
-            "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:/opt/tradelog/"
+            "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:/opt/logger/"
       - name: Pull images and restart
         env:
           TAG: ${{ inputs.tag || needs.build.outputs.tag }}
@@ -90,12 +90,12 @@ jobs:
         run: |
           PREFIX="${PREFIX,,}"
           ssh "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}" \
-            "GHCR_USER='${{ github.actor }}' GHCR_TOKEN='${{ secrets.GITHUB_TOKEN }}' IMAGE_PREFIX='$PREFIX' TAG='$TAG' bash /opt/tradelog/remote-deploy.sh"
+            "GHCR_USER='${{ github.actor }}' GHCR_TOKEN='${{ secrets.GITHUB_TOKEN }}' IMAGE_PREFIX='$PREFIX' TAG='$TAG' bash /opt/logger/remote-deploy.sh"
       - name: Check the live site
-        if: vars.TRADELOG_URL != ''
+        if: vars.LOGGER_URL != ''
         run: |
           for i in $(seq 1 20); do
-            curl -fsS "${{ vars.TRADELOG_URL }}/api/health" && exit 0
+            curl -fsS "${{ vars.LOGGER_URL }}/api/health" && exit 0
             sleep 3
           done
           echo "The site did not answer /api/health after the deploy." && exit 1

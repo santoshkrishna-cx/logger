@@ -24,7 +24,7 @@ grep -qxF "$DEPLOY_KEY" /home/deploy/.ssh/authorized_keys 2>/dev/null || echo "$
 chown deploy:deploy /home/deploy/.ssh/authorized_keys && chmod 600 /home/deploy/.ssh/authorized_keys
 
 echo "== App folder"
-install -d -o deploy -g deploy /opt/tradelog /opt/tradelog/backups
+install -d -o deploy -g deploy /opt/logger /opt/logger/backups
 
 echo "== Firewall: SSH, HTTP, HTTPS only"
 ufw allow OpenSSH
@@ -33,13 +33,13 @@ ufw allow 443/tcp
 ufw --force enable
 
 echo "== Nightly database backup at 02:30 server time, kept 14 days"
-cat > /etc/cron.d/tradelog-backup <<'CRON'
-30 2 * * * deploy cd /opt/tradelog && docker compose -f docker-compose.prod.yml --env-file .env exec -T db pg_dump -U tradelog -Fc tradelog > backups/tradelog-$(date +\%F).dump && find backups -name 'tradelog-*.dump' -mtime +14 -delete
+cat > /etc/cron.d/logger-backup <<'CRON'
+30 2 * * * deploy cd /opt/logger && docker compose -f docker-compose.prod.yml --env-file .env exec -T db pg_dump -U logger -Fc logger > backups/logger-$(date +\%F).dump && find backups -name 'logger-*.dump' -mtime +14 -delete
 CRON
-chmod 644 /etc/cron.d/tradelog-backup
+chmod 644 /etc/cron.d/logger-backup
 
 echo
 echo "Done. Next:"
-echo " 1. Put your .env in /opt/tradelog/.env (see deploy/.env.production.example), owned by deploy, mode 600."
+echo " 1. Put your .env in /opt/logger/.env (see deploy/.env.production.example), owned by deploy, mode 600."
 echo " 2. Point your domain's A record at this droplet."
 echo " 3. Lock the IBKR Flex token to this droplet's outbound IPv4: $(curl -4fsS https://icanhazip.com || echo 'run: curl -4 icanhazip.com')"

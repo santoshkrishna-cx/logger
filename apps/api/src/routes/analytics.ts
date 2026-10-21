@@ -1,4 +1,4 @@
-import { analyze } from "@tradelog/core";
+import { analyze } from "@logger/core";
 import { Router } from "express";
 import { z } from "zod";
 import { ah } from "../http.js";

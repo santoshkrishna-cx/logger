@@ -2,7 +2,7 @@
 import "dotenv/config";
 import { readFileSync } from "node:fs";
 import { createHmac, randomUUID } from "node:crypto";
-import { parseFlex } from "@tradelog/core";
+import { parseFlex } from "@logger/core";
 import { config } from "../src/config.js";
 import { pool, q } from "../src/db.js";
 import { ingest } from "../src/services/ingest.js";

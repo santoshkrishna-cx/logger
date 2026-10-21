@@ -1,4 +1,4 @@
-# Starts Tradelog locally with Docker Desktop on Windows: http://localhost:8080
+# Starts Logger locally with Docker Desktop on Windows: http://localhost:8080
 #   .\scripts\local-up.ps1          start (first run asks for the Google OAuth client ID and secret)
 #   .\scripts\local-up.ps1 -Demo    also load a month of sample trades
 #   .\scripts\local-up.ps1 -Reset   stop and wipe the local database
@@ -31,7 +31,7 @@ if (-not (Get-Var "GOOGLE_CLIENT_ID") -or -not (Get-Var "GOOGLE_CLIENT_SECRET"))
   Set-Var "GOOGLE_CLIENT_SECRET" (Read-Host "Google OAuth client secret")
 }
 
-Write-Host "Building and starting Tradelog (the first build takes a few minutes)..."
+Write-Host "Building and starting Logger (the first build takes a few minutes)..."
 docker compose up -d --build
 if ($LASTEXITCODE -ne 0) { exit 1 }
 
@@ -41,12 +41,12 @@ for ($i = 0; $i -lt 90; $i++) {
   try { Invoke-WebRequest -UseBasicParsing http://localhost:8080/api/health -TimeoutSec 2 | Out-Null; $ok = $true; break } catch { Write-Host -NoNewline "."; Start-Sleep 2 }
 }
 Write-Host ""
-if (-not $ok) { Write-Host "Tradelog didn't come up. See: docker compose logs api"; exit 1 }
+if (-not $ok) { Write-Host "Logger didn't come up. See: docker compose logs api"; exit 1 }
 
 if ($Demo) {
   docker compose exec -T api npx tsx scripts/seed-demo.ts ../../packages/core/test/fixtures/sample-month.xml
   Write-Host "Loaded sample trades (Sep 21 to Oct 20, 2026). Wipe them before real use: .\scripts\local-up.ps1 -Reset"
 }
-Write-Host "`nTradelog is ready: http://localhost:8080"
+Write-Host "`nLogger is ready: http://localhost:8080"
 Write-Host "Sign in with santosh.krishna0909@gmail.com or mailanilkumar@gmail.com."
 Write-Host "Logs: docker compose logs -f api worker    Stop: docker compose down"

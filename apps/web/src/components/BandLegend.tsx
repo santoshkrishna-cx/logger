@@ -1,4 +1,4 @@
-import type { BandSettings } from "@tradelog/core";
+import type { BandSettings } from "@logger/core";
 import { money } from "../format";
 
 /** Explains the colour scale every P&L figure uses. */

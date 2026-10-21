@@ -1,5 +1,5 @@
 {
-  "name": "@tradelog/core",
+  "name": "@logger/core",
   "version": "0.1.0",
   "private": true,
   "type": "module",

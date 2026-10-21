@@ -1,18 +1,18 @@
 {
-  "name": "tradelog",
+  "name": "logger",
   "private": true,
   "version": "0.1.0",
   "description": "Shared IBKR trade journal for Santosh (anilsub02) and Anil (anilsub01)",
   "workspaces": ["packages/*", "apps/*"],
   "engines": { "node": ">=20" },
   "scripts": {
-    "dev": "npm run dev --workspace @tradelog/api & npm run dev --workspace @tradelog/web",
-    "dev:api": "npm run dev --workspace @tradelog/api",
-    "dev:web": "npm run dev --workspace @tradelog/web",
-    "worker": "npm run worker --workspace @tradelog/api",
-    "migrate": "npm run migrate --workspace @tradelog/api",
-    "test": "npm test --workspace @tradelog/core",
+    "dev": "npm run dev --workspace @logger/api & npm run dev --workspace @logger/web",
+    "dev:api": "npm run dev --workspace @logger/api",
+    "dev:web": "npm run dev --workspace @logger/web",
+    "worker": "npm run worker --workspace @logger/api",
+    "migrate": "npm run migrate --workspace @logger/api",
+    "test": "npm test --workspace @logger/core",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "build": "npm run build --workspace @tradelog/web"
+    "build": "npm run build --workspace @logger/web"
   }
 }

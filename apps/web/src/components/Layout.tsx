@@ -16,7 +16,7 @@ export function Layout({ me }: { me: Me }) {
     <>
       <header className="top">
         <div className="top-in">
-          <NavLink to="/" className="brand">Tradelog</NavLink>
+          <NavLink to="/" className="brand">Logger</NavLink>
           <nav className="nav" aria-label="Main">
             {link("/", "Dashboard")}
             {link("/log", "Log")}

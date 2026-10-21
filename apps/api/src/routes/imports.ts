@@ -1,4 +1,4 @@
-import { parseFlex } from "@tradelog/core";
+import { parseFlex } from "@logger/core";
 import express, { Router } from "express";
 import { z } from "zod";
 import { q } from "../db.js";

@@ -19,15 +19,15 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: tradelog
-          POSTGRES_PASSWORD: tradelog
-          POSTGRES_DB: tradelog_test
+          POSTGRES_USER: logger
+          POSTGRES_PASSWORD: logger
+          POSTGRES_DB: logger_test
         ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U tradelog"
+          --health-cmd "pg_isready -U logger"
           --health-interval 5s --health-timeout 5s --health-retries 10
     env:
-      DATABASE_URL: postgres://tradelog:tradelog@localhost:5432/tradelog_test
+      DATABASE_URL: postgres://logger:logger@localhost:5432/logger_test
       SESSION_SECRET: ci-only-secret
       GOOGLE_CLIENT_ID: ci
       GOOGLE_CLIENT_SECRET: ci
@@ -47,6 +47,6 @@ jobs:
       - name: Migrate a fresh database
         run: npm run migrate
       - name: End-to-end smoke test
-        run: npm run smoke --workspace @tradelog/api
+        run: npm run smoke --workspace @logger/api
       - name: Build web app
         run: npm run build

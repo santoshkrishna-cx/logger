@@ -1,4 +1,4 @@
--- Tradelog initial schema. Fills come only from IBKR; people write only the journal side.
+-- Logger initial schema. Fills come only from IBKR; people write only the journal side.
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE accounts (

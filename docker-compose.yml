@@ -6,12 +6,12 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: tradelog
+      POSTGRES_USER: logger
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
-      POSTGRES_DB: tradelog
+      POSTGRES_DB: logger
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U tradelog"]
+      test: ["CMD-SHELL", "pg_isready -U logger"]
       interval: 5s
       retries: 10
 
@@ -19,7 +19,7 @@ services:
     build: { context: ., dockerfile: apps/api/Dockerfile }
     env_file: .env
     environment:
-      DATABASE_URL: postgres://tradelog:${POSTGRES_PASSWORD}@db:5432/tradelog
+      DATABASE_URL: postgres://logger:${POSTGRES_PASSWORD}@db:5432/logger
     command: ["npx", "tsx", "scripts/migrate.ts"]
     depends_on: { db: { condition: service_healthy } }
 
@@ -29,7 +29,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://tradelog:${POSTGRES_PASSWORD}@db:5432/tradelog
+      DATABASE_URL: postgres://logger:${POSTGRES_PASSWORD}@db:5432/logger
     depends_on: { migrate: { condition: service_completed_successfully } }
 
   worker:
@@ -38,7 +38,7 @@ services:
     env_file: .env
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://tradelog:${POSTGRES_PASSWORD}@db:5432/tradelog
+      DATABASE_URL: postgres://logger:${POSTGRES_PASSWORD}@db:5432/logger
     command: ["npx", "tsx", "src/worker.ts"]
     depends_on: { migrate: { condition: service_completed_successfully } }
 

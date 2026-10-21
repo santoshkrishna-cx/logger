@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { pnlBand, shiftPeriod, todayET, type BandSettings, type Period, type PnlBand } from "@tradelog/core";
+import { pnlBand, shiftPeriod, todayET, type BandSettings, type Period, type PnlBand } from "@logger/core";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";

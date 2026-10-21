@@ -1,4 +1,4 @@
-<FlexQueryResponse queryName="tradelog-today" type="TCF">
+<FlexQueryResponse queryName="logger-today" type="TCF">
  <FlexStatements count="1">
   <FlexStatement accountId="U1110002">
    <TradeConfirms>

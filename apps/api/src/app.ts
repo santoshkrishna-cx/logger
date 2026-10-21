@@ -27,7 +27,7 @@ export function createApp() {
   app.use(session({
     store: new PgStore({ pool, tableName: "session" }),
     secret: config.sessionSecret,
-    name: "tradelog.sid",
+    name: "logger.sid",
     resave: false,
     saveUninitialized: false,
     cookie: { httpOnly: true, sameSite: "lax", secure: config.cookieSecure, maxAge: 30 * 864e5 }

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { Rule } from "@tradelog/core";
+import type { Rule } from "@logger/core";
 import { useState } from "react";
 import { api } from "../api";
 

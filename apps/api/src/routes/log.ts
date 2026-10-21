@@ -1,4 +1,4 @@
-import { daySections, r2 } from "@tradelog/core";
+import { daySections, r2 } from "@logger/core";
 import { Router } from "express";
 import { z } from "zod";
 import { ah } from "../http.js";

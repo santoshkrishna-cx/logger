@@ -1,4 +1,4 @@
-# Tradelog
+# Logger
 
 The shared IBKR trade journal for Santosh (`anilsub02`) and Anil (`anilsub01`).
 
@@ -6,7 +6,7 @@ Every execution from both sub-accounts is grouped into trades and shown day by d
 
 Only two Google accounts can sign in. Everyone else is turned away.
 
-Full specification: [`docs/Tradelog_Project_Docs.docx`](docs/Tradelog_Project_Docs.docx) (PRD, TRD, App Flow, UI/UX brief, Backend Schema, Implementation Plan, Project Plan).
+Full specification: [`docs/Logger_Project_Docs.docx`](docs/Logger_Project_Docs.docx) (PRD, TRD, App Flow, UI/UX brief, Backend Schema, Implementation Plan, Project Plan).
 
 ## Quick start: run it on your computer
 
@@ -31,7 +31,7 @@ The first run creates `.env` with generated secrets, asks for the Google client 
 | API | Node.js 20, TypeScript, Express, Zod, Passport (Google OAuth 2.0) |
 | Database | PostgreSQL 16 (plain SQL migrations) |
 | Jobs | node-cron worker calling the IBKR Flex Web Service |
-| Shared logic | `@tradelog/core`: Flex parser, trade builder, scoring, analytics (unit tested with Vitest) |
+| Shared logic | `@logger/core`: Flex parser, trade builder, scoring, analytics (unit tested with Vitest) |
 | Deploy | Docker Compose: Postgres, API, worker, nginx serving the web app and proxying `/api` and `/auth` |
 
 ## Repository layout
@@ -81,7 +81,7 @@ Requires Node 20+ and PostgreSQL 16.
 
 ```
 npm install
-createdb tradelog                 # or point DATABASE_URL at any empty database
+createdb logger                 # or point DATABASE_URL at any empty database
 npm run migrate
 npm run dev:api                   # API on :4000
 npm run dev:web                   # web on :5173, proxies /api and /auth to :4000
@@ -101,7 +101,7 @@ cd apps/api && npx tsx scripts/seed-demo.ts ../../packages/core/test/fixtures/ac
 ```
 npm test                          # core unit tests
 npm run typecheck                 # all three packages
-DATABASE_URL=postgres://.../tradelog_test npm run smoke --workspace @tradelog/api
+DATABASE_URL=postgres://.../logger_test npm run smoke --workspace @logger/api
 ```
 
 `smoke` runs 29 end-to-end checks against a throwaway database: the sign-in gate, who may write what, joint lesson sign-off, imports and re-imports, the next-morning P&L upgrade, removal of erroneous trades, the dashboard and analytics. It writes test data; never point it at production.
@@ -119,7 +119,7 @@ One-time setup, step by step: [`docs/deploy-digitalocean.md`](docs/deploy-digita
 | `deploy/droplet-setup.sh` | Prepares a fresh Ubuntu droplet (Docker, deploy user, firewall, backups) |
 | `deploy/docker-compose.prod.yml`, `deploy/Caddyfile` | Production stack with HTTPS |
 | `deploy/remote-deploy.sh` | Runs on the droplet during each deploy |
-| `deploy/.env.production.example` | Template for `/opt/tradelog/.env` on the droplet |
+| `deploy/.env.production.example` | Template for `/opt/logger/.env` on the droplet |
 
 ## How the numbers are built
 

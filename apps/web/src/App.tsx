@@ -15,7 +15,7 @@ export function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
-      <Route element={me.isLoading ? <div className="page muted">Opening Tradelog…</div> : me.data ? <Layout me={me.data} /> : <Navigate to="/login" replace />}>
+      <Route element={me.isLoading ? <div className="page muted">Opening Logger…</div> : me.data ? <Layout me={me.data} /> : <Navigate to="/login" replace />}>
         <Route index element={<DashboardPage />} />
         <Route path="log" element={<LogPage />} />
         <Route path="log/:date" element={<LogPage />} />

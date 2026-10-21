@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { Rule } from "@tradelog/core";
+import type { Rule } from "@logger/core";
 import { api, qs, type TradeView } from "../api";
 import { useLayout } from "../components/Layout";
 import { TradeTicket } from "../components/TradeTicket";

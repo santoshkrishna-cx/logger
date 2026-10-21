@@ -1,4 +1,4 @@
-import type { Discipline, RatingValue, Rule } from "@tradelog/core";
+import type { Discipline, RatingValue, Rule } from "@logger/core";
 
 export function RuleStrip({ rules, ratings, discipline }: { rules: Rule[]; ratings: Record<string, RatingValue>; discipline: Discipline }) {
   const active = rules.filter(r => r.active);

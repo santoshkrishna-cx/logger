@@ -2,7 +2,7 @@
  * End-to-end smoke test against a real (throwaway) database.
  * Mints signed sessions for the two allowed users instead of going through Google,
  * imports the core test fixtures, and exercises the main endpoints.
- *   DATABASE_URL=... npm run smoke --workspace @tradelog/api
+ *   DATABASE_URL=... npm run smoke --workspace @logger/api
  * Never point this at production: it writes test data.
  */
 import "dotenv/config";
@@ -22,7 +22,7 @@ async function sessionFor(email: string, account: string) {
   const sid = randomUUID();
   const sess = { cookie: { originalMaxAge: 864e5, expires: new Date(Date.now() + 864e5).toISOString(), httpOnly: true, path: "/" }, passport: { user: u.id } };
   await q(`INSERT INTO "session" (sid, sess, expire) VALUES ($1,$2, now() + interval '1 day')`, [sid, JSON.stringify(sess)]);
-  return `tradelog.sid=${encodeURIComponent(sign(sid))}`;
+  return `logger.sid=${encodeURIComponent(sign(sid))}`;
 }
 
 let failures = 0;

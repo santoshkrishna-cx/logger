@@ -1,4 +1,4 @@
-// Builds docs/Tradelog_Project_Docs.docx — the 7 founding documents (project-docs skill format).
+// Builds docs/Logger_Project_Docs.docx — the 7 founding documents (project-docs skill format).
 // Run: node docs/build-project-docs.cjs
 const fs = require("fs");
 const path = require("path");
@@ -62,7 +62,7 @@ const prd = [
   h1("01 — PRD"),
   purpose("The north star — what we're building and for whom."),
   kv([
-    ["App Name", "Tradelog"],
+    ["App Name", "Logger"],
     ["Tagline", "A shared, rule-rated trade journal that turns every IBKR execution into a reviewed trade, so two traders can see which habits make money and which cost it."],
     ["Problem", "Santosh and Anil day-trade options (mostly 0DTE SPX/SPXW calls, plus MU, META, SNDK and others) in two IBKR sub-accounts. Reviews happen from TWS blotter screenshots: there is no shared record of why a trade was taken, what the other person thought of it, whether the rules held, or whether a lesson was actually discussed. Patterns that cost money (a bad weekday, late-day trades, revenge entries, moved stops) stay invisible."],
     ["Target User", "Two people only: Santosh (account anilsub02) and Anil (account anilsub01), friends who trade separately under one IBKR master account and review each other's trades. Both are active intraday traders who scale out of 10-lot entries and leave a runner; they want a daily review loop and hard numbers on discipline."],
@@ -88,7 +88,7 @@ const prd = [
       "Mobile push or Slack nudge when a lesson is waiting on you."
     ]],
     ["Out of Scope", [
-      "Placing, modifying or cancelling orders; any money movement. Tradelog is read-only toward IBKR.",
+      "Placing, modifying or cancelling orders; any money movement. Logger is read-only toward IBKR.",
       "Real-time streaming; IBKR report data lags 5–10 minutes, which suits a review tool.",
       "Tax lots, wash sales and 1099 reconciliation.",
       "Users beyond Santosh and Anil, sign-up, or public sharing.",
@@ -123,10 +123,10 @@ const trd = [
   purpose("The technical blueprint — locked-in stack decisions the agent uses across every file."),
   kv([
     ["Frontend", "React 18 + TypeScript + Vite 5; React Router 6; TanStack Query 5 for server state; Recharts for charts; plain CSS with design tokens (no CSS framework)."],
-    ["Backend", "Node.js 20 + TypeScript + Express 4 (run with tsx); Zod request validation; separate node-cron worker process for the IBKR sync. Shared pure-TypeScript package @tradelog/core holds the Flex parser, trade builder, scoring and analytics used by both API and web."],
+    ["Backend", "Node.js 20 + TypeScript + Express 4 (run with tsx); Zod request validation; separate node-cron worker process for the IBKR sync. Shared pure-TypeScript package @logger/core holds the Flex parser, trade builder, scoring and analytics used by both API and web."],
     ["Database", "PostgreSQL 16 via node-postgres (pg); plain SQL migrations applied by scripts/migrate.ts; sessions stored in Postgres (connect-pg-simple)."],
     ["Auth", "Google OAuth 2.0 via Passport (passport-google-oauth20). Server-side allow-list ALLOWED_USERS maps exactly two verified Google emails to their accounts; checked at sign-in and on every request. Google consent screen kept in Testing mode with only those two test users as a second lock. Cookie session: httpOnly, SameSite=Lax, Secure in production, 30-day expiry."],
-    ["Hosting", "Docker Compose stack (Postgres, API, worker, nginx web) on one Linux server with a static IP for the IBKR token lock. TBD — which host: the existing OVH server, Azure, or a new VPS? TBD — which domain or subdomain will serve Tradelog?"],
+    ["Hosting", "Docker Compose stack (Postgres, API, worker, nginx web) on one Linux server with a static IP for the IBKR token lock. TBD — which host: the existing OVH server, Azure, or a new VPS? TBD — which domain or subdomain will serve Logger?"],
     ["Third-party APIs", [
       "IBKR Flex Web Service — SendRequest/GetStatement for Trade Confirmation and Activity Flex queries — Free with IBKR account",
       "Google OAuth 2.0 / OpenID Connect — sign-in for the two users — Free",
@@ -213,7 +213,7 @@ const flow = [
       "Rules empty: add-rule field (starter rules are seeded by migration 002)."
     ]],
     ["Error States", [
-      "Google account not on the list: /login shows that Tradelog is private to Santosh and Anil.",
+      "Google account not on the list: /login shows that Logger is private to Santosh and Anil.",
       "Unverified Google email: /login asks to verify with Google first.",
       "Session expired (401): redirect to /login.",
       "Writing someone else's side (403): inline message naming who writes it.",
@@ -456,7 +456,7 @@ const impl = [
     ["8. Dashboard", "Position, cash and P&L at a glance", ["Period ranges (day, week, month, year) with previous-period comparison", "Per-person figures and drill-down; series and intraday charts; open positions with IBKR market value"], "Dashboard figures match the log for any period and either person."],
     ["9. Analytics", "Failures made visible", ["Weekday, symbol, time, hold, trade-number, revenge, discipline, rule, size, expiry, right breakdowns", "Equity curve and drawdown; loss-limit breaches; leak ranking", "Rules and Settings pages"], "Analytics shows best and worst weekday and symbols and ranks the worst leaks."],
     ["10. UI Polish", "Cohesive and usable on any device", ["Band legend on every money page; dark theme", "Phone layouts for nav, rail and tickets", "Empty and error states"], "Every page reads correctly at 380px and 1440px in both themes."],
-    ["11. Testing", "Confidence before go-live", ["End-to-end smoke test against Postgres (29 checks)", "One week of live trades checked against IBKR statements by both people"], "Smoke passes and a week of Tradelog P&L matches IBKR to the cent."],
+    ["11. Testing", "Confidence before go-live", ["End-to-end smoke test against Postgres (29 checks)", "One week of live trades checked against IBKR statements by both people"], "Smoke passes and a week of Logger P&L matches IBKR to the cent."],
     ["12. Deploy", "Live for both people", ["Provision host with static IP; DNS and TLS", "docker compose up; migrations; production Google redirect URI", "Flex token IP-locked to the server"], "Both sign in at the production URL and the 06:00 Activity sync succeeds."]
   ], [1.1, 1.4, 4, 2]),
   new Paragraph({ spacing: { before: 200, after: 80 }, children: [new TextRun({ text: "Overall Done Criteria", bold: true, font: FONT, size: 22 })] }),
@@ -467,7 +467,7 @@ const impl = [
 const T = "2026-10-20";
 const sched = [
   ["1", "Setup", "Scaffold monorepo, configs, Docker files", "AI Agent", "0.5d", T, T, T, T, "Done", "Repo built in Claude workspace; delivered as zip"],
-  ["1", "Setup", "Place repo in repos folder and push to GitHub", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "TBD — repo path and GitHub org; Claude Code can do this from the zip"],
+  ["1", "Setup", "Place repo in repos folder and push to GitHub", "Santosh", "0.5d", "2026-10-21", "2026-10-21", T, "—", "In Progress", "Repo santoshkrishna-cx/logger created (public); push pending"],
   ["2", "Database", "Write migrations 001 and 002", "AI Agent", "0.5d", T, T, T, T, "Done", "Verified on PostgreSQL 16"],
   ["3", "Auth", "Google allow-list auth and sessions", "AI Agent", "1d", T, T, T, T, "Done", "Refusal and 401 paths covered by smoke test"],
   ["3", "Auth", "Create Google OAuth client and Testing-mode consent screen", "Santosh", "0.5d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "Add both Gmail addresses as test users; register http://localhost:8080/auth/google/callback first"],
@@ -484,6 +484,8 @@ const sched = [
   ["10", "UI Polish", "Band legend, dark theme, phone layouts, empty states", "AI Agent", "0.5d", T, T, T, T, "Done", "Reviewed at 390px and 1440px"],
   ["11", "Testing", "End-to-end smoke test", "AI Agent", "0.5d", T, T, T, T, "Done", "29 checks pass"],
   ["11", "Testing", "One-command local Docker start (local-up scripts)", "AI Agent", "0.5d", T, T, T, T, "Done", "Added in v2; images and script verified in workspace"],
+  ["11", "Testing", "CI and Deploy pipeline (GitHub Actions, GHCR, droplet scripts)", "AI Agent", "1d", T, T, T, T, "Done", "Added in v3; workflows pass actionlint; first live run pending"],
+  ["1", "Setup", "Rename the app and repo to Logger", "AI Agent", "0.5d", T, T, T, T, "Done", "Added in v3; GitHub repo santoshkrishna-cx/logger"],
   ["11", "Testing", "Test locally on Docker Desktop", "Santosh", "1d", "2026-10-21", "2026-10-21", "—", "—", "Not Started", "Added in v2; run scripts/local-up with --demo, then --reset before real imports"],
   ["11", "Testing", "One week of live trades reconciled to IBKR", "Santosh, Anil", "5d", "2026-10-26", "2026-10-30", "—", "—", "Not Started", "Needs Deploy done first"],
   ["12", "Deploy", "Choose host and provision server with static IP", "Santosh", "1d", "2026-10-22", "2026-10-22", T, "—", "In Progress", "DigitalOcean droplet chosen; Santosh provisions after local testing. TBD — domain?"],
@@ -495,7 +497,7 @@ const plan = [
   purpose("Living schedule — phases, activities, owners, durations, and dates, updated after every round of progress."),
   h2("07.1 — Plan Metadata"),
   kv([
-    ["Plan Version", "v2"],
+    ["Plan Version", "v3"],
     ["Last Updated", T],
     ["Project Start Date", `${T} (assumed — confirm)`],
     ["Target Launch Date", "2026-11-02 (assumed — confirm; follows one week of live reconciliation)"],
@@ -520,15 +522,15 @@ const plan = [
     ["Launch", "2026-11-02", "Not Started", "Assumed — confirm"]
   ], [3, 1.3, 1.3, 4], LANDSCAPE_W),
   h2("07.4 — Change Log"),
-  grid(["Version", "Date", "Change Summary"], [["v1", T, "Initial plan created"], ["v2", T, "Confirmed Gmail sign-in addresses and kept default thresholds (Done); chose DigitalOcean with Santosh owning deploy; added local Docker start (Done) and local testing (Not Started)."]], [1, 1.5, 8], LANDSCAPE_W)
+  grid(["Version", "Date", "Change Summary"], [["v1", T, "Initial plan created"], ["v2", T, "Confirmed Gmail sign-in addresses and kept default thresholds (Done); chose DigitalOcean with Santosh owning deploy; added local Docker start (Done) and local testing (Not Started)."], ["v3", T, "Renamed the app from Tradelog to Logger across all documents; added the CI and Deploy pipeline (Done); repo push In Progress."]], [1, 1.5, 8], LANDSCAPE_W)
 ];
 
 // ---------------------------------------------------------------- assemble
-const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "Tradelog Project Docs  |  page ", font: FONT, size: 16, color: "5B6676" }), new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 16, color: "5B6676" })] })] });
+const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: "Logger Project Docs  |  page ", font: FONT, size: 16, color: "5B6676" }), new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 16, color: "5B6676" })] })] });
 const doc = new Document({
   creator: "Santosh Krishna",
   features: { updateFields: true },
-  title: "Tradelog Project Docs",
+  title: "Logger Project Docs",
   styles: {
     default: { document: { run: { font: FONT, size: 20 } } },
     paragraphStyles: [
@@ -545,9 +547,9 @@ const doc = new Document({
       properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 } } },
       footers: { default: footer },
       children: [
-        new Paragraph({ spacing: { before: 1800, after: 120 }, children: [new TextRun({ text: "Tradelog", bold: true, size: 64, font: FONT, color: "16202E" })] }),
+        new Paragraph({ spacing: { before: 1800, after: 120 }, children: [new TextRun({ text: "Logger", bold: true, size: 64, font: FONT, color: "16202E" })] }),
         new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "Project Docs: PRD, TRD, App Flow, UI/UX Design Brief, Backend Schema, Implementation Plan, Project Plan", size: 26, font: FONT, color: "2A4D8F" })] }),
-        new Paragraph({ spacing: { after: 600 }, children: [new TextRun({ text: `Version v2  |  ${T}  |  Owner: Santosh Krishna`, size: 20, font: FONT, color: "5B6676" })] }),
+        new Paragraph({ spacing: { after: 600 }, children: [new TextRun({ text: `Version v3  |  ${T}  |  Owner: Santosh Krishna`, size: 20, font: FONT, color: "5B6676" })] }),
         new Paragraph({ spacing: { after: 120 }, children: [new TextRun({ text: "Contents", bold: true, size: 28, font: FONT })] }),
         new TableOfContents("Contents", { hyperlink: true, headingStyleRange: "1-1" }),
         new Paragraph({ spacing: { before: 200 }, children: [new TextRun({ text: "Open Word's References > Update Table to refresh page numbers.", italics: true, size: 18, color: "5B6676", font: FONT })] }),
@@ -563,7 +565,7 @@ const doc = new Document({
 });
 
 Packer.toBuffer(doc).then(buf => {
-  const out = path.join(__dirname, "Tradelog_Project_Docs.docx");
+  const out = path.join(__dirname, "Logger_Project_Docs.docx");
   fs.writeFileSync(out, buf);
   console.log("wrote", out, buf.length, "bytes");
 });

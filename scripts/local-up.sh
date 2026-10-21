@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Starts Tradelog locally with Docker: Postgres, API, sync worker and web on http://localhost:8080
+# Starts Logger locally with Docker: Postgres, API, sync worker and web on http://localhost:8080
 #   ./scripts/local-up.sh          start (first run asks for the Google OAuth client ID and secret)
 #   ./scripts/local-up.sh --demo   also load a month of sample trades to click around with
 #   ./scripts/local-up.sh --reset  stop and wipe the local database
@@ -38,7 +38,7 @@ if [[ -z "$(getvar GOOGLE_CLIENT_ID)" || -z "$(getvar GOOGLE_CLIENT_SECRET)" ]];
   setvar GOOGLE_CLIENT_SECRET "$csec"
 fi
 
-echo "Building and starting Tradelog (the first build takes a few minutes)..."
+echo "Building and starting Logger (the first build takes a few minutes)..."
 docker compose up -d --build
 
 printf "Waiting for the API"
@@ -47,7 +47,7 @@ for _ in $(seq 1 90); do
   printf "."; sleep 2
 done
 echo
-if [[ -z "${ok:-}" ]]; then echo "Tradelog didn't come up. See: docker compose logs api"; exit 1; fi
+if [[ -z "${ok:-}" ]]; then echo "Logger didn't come up. See: docker compose logs api"; exit 1; fi
 
 if [[ "${1:-}" == "--demo" ]]; then
   docker compose exec -T api npx tsx scripts/seed-demo.ts ../../packages/core/test/fixtures/sample-month.xml
@@ -55,6 +55,6 @@ if [[ "${1:-}" == "--demo" ]]; then
 fi
 
 echo
-echo "Tradelog is ready: http://localhost:8080"
+echo "Logger is ready: http://localhost:8080"
 echo "Sign in with santosh.krishna0909@gmail.com or mailanilkumar@gmail.com."
 echo "Logs: docker compose logs -f api worker    Stop: docker compose down"

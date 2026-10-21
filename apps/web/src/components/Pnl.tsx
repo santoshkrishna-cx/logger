@@ -1,4 +1,4 @@
-import { pnlBand, type BandSettings, type PnlBand } from "@tradelog/core";
+import { pnlBand, type BandSettings, type PnlBand } from "@logger/core";
 import { bandLabel, money } from "../format";
 
 /** P&L figure coloured by band, with its band named for screen readers and on hover. */

@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { BandSettings, RatingValue, Rule } from "@tradelog/core";
+import type { BandSettings, RatingValue, Rule } from "@logger/core";
 import { useEffect, useRef, useState } from "react";
 import { api, type TradeView } from "../api";
 import { dayShort, hhmm, money, personClass, price } from "../format";

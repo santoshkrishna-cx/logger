@@ -1,7 +1,7 @@
 import {
   applyCash, buildTrades, discipline, pnlBand,
   type BandSettings, type CashDay, type Fill, type OpeningCash, type PnlBand, type RatingValue, type ReviewedTrade, type Rule
-} from "@tradelog/core";
+} from "@logger/core";
 import { q } from "../db.js";
 
 export interface Settings {

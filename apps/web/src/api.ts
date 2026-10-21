@@ -1,4 +1,4 @@
-import type { BandSettings, CashDay, PnlBand, RatingValue, Rule, Trade, Discipline } from "@tradelog/core";
+import type { BandSettings, CashDay, PnlBand, RatingValue, Rule, Trade, Discipline } from "@logger/core";
 
 export type Scope = "both" | "anilsub01" | "anilsub02";
 

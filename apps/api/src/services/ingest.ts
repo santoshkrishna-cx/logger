@@ -1,4 +1,4 @@
-import type { FlexReport, ParsedFill } from "@tradelog/core";
+import type { FlexReport, ParsedFill } from "@logger/core";
 import { pool, tx } from "../db.js";
 import { loadAccounts } from "./data.js";
 

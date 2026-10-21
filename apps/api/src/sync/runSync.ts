@@ -1,4 +1,4 @@
-import { parseFlex } from "@tradelog/core";
+import { parseFlex } from "@logger/core";
 import { config } from "../config.js";
 import { q } from "../db.js";
 import { ingest } from "../services/ingest.js";

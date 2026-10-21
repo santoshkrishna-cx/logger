@@ -10,7 +10,7 @@ const RETRYABLE = new Set(["1001", "1004", "1005", "1006", "1007", "1008", "1009
 interface FlexStatementResponse { Status?: string; ReferenceCode?: string; ErrorCode?: string; ErrorMessage?: string }
 
 async function get(url: string) {
-  const res = await fetch(url, { headers: { "User-Agent": "Tradelog/0.1" } });
+  const res = await fetch(url, { headers: { "User-Agent": "Logger/0.1" } });
   if (!res.ok) throw new Error(`IBKR Flex Web Service answered HTTP ${res.status}`);
   return res.text();
 }

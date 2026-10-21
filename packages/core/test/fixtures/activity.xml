@@ -1,4 +1,4 @@
-<FlexQueryResponse queryName="tradelog-activity" type="AF">
+<FlexQueryResponse queryName="logger-activity" type="AF">
  <FlexStatements count="2">
   <FlexStatement accountId="U1110002" fromDate="20261020" toDate="20261020" period="LastBusinessDay">
    <EquitySummaryInBase>

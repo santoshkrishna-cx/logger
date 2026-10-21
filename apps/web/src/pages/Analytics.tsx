@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { addDays, periodRange, pnlBand, todayET, type Analysis, type BandSettings, type Bucket } from "@tradelog/core";
+import { addDays, periodRange, pnlBand, todayET, type Analysis, type BandSettings, type Bucket } from "@logger/core";
 import { Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { api, qs } from "../api";
 import { BandLegend } from "../components/BandLegend";
