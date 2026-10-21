@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tradelog
+          POSTGRES_PASSWORD: tradelog
+          POSTGRES_DB: tradelog_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U tradelog"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://tradelog:tradelog@localhost:5432/tradelog_test
+      SESSION_SECRET: ci-only-secret
+      GOOGLE_CLIENT_ID: ci
+      GOOGLE_CLIENT_SECRET: ci
+      GOOGLE_CALLBACK_URL: http://localhost:8080/auth/google/callback
+      ALLOWED_USERS: santosh.krishna0909@gmail.com:anilsub02,mailanilkumar@gmail.com:anilsub01
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Unit tests
+        run: npm test
+      - name: Migrate a fresh database
+        run: npm run migrate
+      - name: End-to-end smoke test
+        run: npm run smoke --workspace @tradelog/api
+      - name: Build web app
+        run: npm run build

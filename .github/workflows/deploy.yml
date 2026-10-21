@@ -1,0 +1,101 @@
+name: Deploy
+
+# Runs after CI passes on main, or by hand from the Actions tab (optionally with an older image tag to roll back).
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to deploy (leave empty to build and deploy the current commit)"
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: (github.event_name == 'workflow_dispatch' && inputs.tag == '') || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      prefix: ${{ steps.meta.outputs.prefix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - id: meta
+        run: |
+          echo "tag=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
+          echo "prefix=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push API image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/api/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.prefix }}/tradelog-api:${{ steps.meta.outputs.tag }},${{ steps.meta.outputs.prefix }}/tradelog-api:latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,mode=max,scope=api
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/web/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.prefix }}/tradelog-web:${{ steps.meta.outputs.tag }},${{ steps.meta.outputs.prefix }}/tradelog-web:latest
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,mode=max,scope=web
+
+  deploy:
+    needs: build
+    if: always() && (needs.build.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.tag != ''))
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.TRADELOG_URL }}
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - name: Set up SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/id_ed25519 && chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DROPLET_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+      - name: Copy deploy files
+        run: |
+          scp deploy/docker-compose.prod.yml deploy/Caddyfile deploy/remote-deploy.sh \
+            "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}:/opt/tradelog/"
+      - name: Pull images and restart
+        env:
+          TAG: ${{ inputs.tag || needs.build.outputs.tag }}
+          PREFIX: ${{ needs.build.outputs.prefix || format('ghcr.io/{0}', github.repository_owner) }}
+        run: |
+          PREFIX="${PREFIX,,}"
+          ssh "${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_HOST }}" \
+            "GHCR_USER='${{ github.actor }}' GHCR_TOKEN='${{ secrets.GITHUB_TOKEN }}' IMAGE_PREFIX='$PREFIX' TAG='$TAG' bash /opt/tradelog/remote-deploy.sh"
+      - name: Check the live site
+        if: vars.TRADELOG_URL != ''
+        run: |
+          for i in $(seq 1 20); do
+            curl -fsS "${{ vars.TRADELOG_URL }}/api/health" && exit 0
+            sleep 3
+          done
+          echo "The site did not answer /api/health after the deploy." && exit 1

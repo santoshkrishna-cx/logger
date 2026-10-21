@@ -1,0 +1,61 @@
+# Production stack on the droplet. Images come from GitHub Container Registry; secrets live in /opt/tradelog/.env only.
+x-api: &api
+  image: ${IMAGE_PREFIX}/tradelog-api:${TAG:-latest}
+  restart: unless-stopped
+  env_file: .env
+  environment:
+    NODE_ENV: production
+    DATABASE_URL: postgres://tradelog:${POSTGRES_PASSWORD}@db:5432/tradelog
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: tradelog
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: tradelog
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tradelog"]
+      interval: 5s
+      retries: 10
+
+  migrate:
+    <<: *api
+    restart: "no"
+    command: ["npx", "tsx", "scripts/migrate.ts"]
+    depends_on: { db: { condition: service_healthy } }
+    profiles: [tools]
+
+  api:
+    <<: *api
+    depends_on: { db: { condition: service_healthy } }
+
+  worker:
+    <<: *api
+    command: ["npx", "tsx", "src/worker.ts"]
+    depends_on: { db: { condition: service_healthy } }
+
+  web:
+    image: ${IMAGE_PREFIX}/tradelog-web:${TAG:-latest}
+    restart: unless-stopped
+    depends_on: [api]
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN in .env}
+      ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [web]
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

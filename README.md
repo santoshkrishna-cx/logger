@@ -106,14 +106,20 @@ DATABASE_URL=postgres://.../tradelog_test npm run smoke --workspace @tradelog/ap
 
 `smoke` runs 29 end-to-end checks against a throwaway database: the sign-in gate, who may write what, joint lesson sign-off, imports and re-imports, the next-morning P&L upgrade, removal of erroneous trades, the dashboard and analytics. It writes test data; never point it at production.
 
-## Deploying to a DigitalOcean droplet
+## Deploying to DigitalOcean
 
-1. Create an Ubuntu droplet (the smallest Basic size is enough for two people) and reserve a static IP for it. Install Docker: `curl -fsSL https://get.docker.com | sh`.
-2. Point a domain or subdomain at the droplet. Put Caddy (or nginx with certbot) on the host for HTTPS, proxying to `localhost:8080`.
-3. Copy the repo up, copy your `.env`, then change: `COOKIE_SECURE=true`, `APP_ORIGIN` and `GOOGLE_CALLBACK_URL` to the `https://` address, and a new `SESSION_SECRET` and `POSTGRES_PASSWORD`.
-4. In Google Cloud, add the `https://` origin and callback to the OAuth client.
-5. Generate the IBKR Flex token locked to the droplet's static IP and put it in `.env`.
-6. `docker compose up -d --build`. Back up the `pgdata` volume (DigitalOcean droplet backups or a nightly `pg_dump`).
+Every push to `main` runs CI (typecheck, unit tests, the end-to-end smoke test on Postgres, web build). When CI passes, the Deploy workflow builds Docker images, pushes them to GitHub Container Registry, and rolls them out to the droplet over SSH, with an automatic rollback if the new version fails its health check. Caddy on the droplet handles HTTPS.
+
+One-time setup, step by step: [`docs/deploy-digitalocean.md`](docs/deploy-digitalocean.md).
+
+| File | Purpose |
+| --- | --- |
+| `.github/workflows/ci.yml` | Tests on every pull request and push |
+| `.github/workflows/deploy.yml` | Build, push, deploy, health check; manual run with a tag rolls back |
+| `deploy/droplet-setup.sh` | Prepares a fresh Ubuntu droplet (Docker, deploy user, firewall, backups) |
+| `deploy/docker-compose.prod.yml`, `deploy/Caddyfile` | Production stack with HTTPS |
+| `deploy/remote-deploy.sh` | Runs on the droplet during each deploy |
+| `deploy/.env.production.example` | Template for `/opt/tradelog/.env` on the droplet |
 
 ## How the numbers are built
 
