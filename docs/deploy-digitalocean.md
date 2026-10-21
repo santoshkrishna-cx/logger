@@ -22,11 +22,11 @@ All commands below run on your Mac unless marked **droplet**.
 
 ## 1. Put the code on GitHub
 
-Create an **empty, private** repository (no README, .gitignore or license), then from the unzipped folder:
+The repository is `santoshkrishna-cx/logger` and is still empty. From the unzipped folder:
 
 ```
-cd ~/repos/tradelog
-git remote add origin git@github.com:santoshkrishna-cx/tradelog.git
+cd ~/repos/logger
+git remote add origin git@github.com:santoshkrishna-cx/logger.git
 git push -u origin main
 ```
 
