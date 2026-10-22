@@ -92,6 +92,12 @@ export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false, tag
         <span className="flags">{flags}</span>
         <span className="chev" aria-hidden="true">›</span>
       </button>
+      <div className="tmeta">
+        <span><b>{hold === null ? (t.status === "open" ? "Open" : "—") : hold >= 1440 ? `${Math.round(hold / 1440)} d` : `${hold} min`}</b> in trade</span>
+        <span><b>{cost === null ? "—" : money(cost, { sign: false })}</b> cost</span>
+        {pctOfPortfolio !== undefined && <span><b>{pctOfPortfolio === null ? "—" : pct(pctOfPortfolio)}</b> of portfolio</span>}
+        {pctOfCash !== undefined && <span><b>{pctOfCash === null ? "—" : pct(pctOfCash)}</b> of cash</span>}
+      </div>
       {open && (
         <div className="body">
           <div className="machine">

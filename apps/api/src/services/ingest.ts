@@ -105,10 +105,13 @@ export async function ingest(report: FlexReport, source: Source, opts: { commit:
     for (const n of report.nav) {
       const account = match(n.ibkrAccount, n.alias);
       if (!account || !n.date) continue;
+      // EquitySummary carries the real end-of-day cash balance per date (n.cash); store it so the
+      // next day's opening cash is IBKR's actual figure, not a running sum that ignores deposits.
       await c.query(
-        `INSERT INTO account_days (account_code, trade_date, nav) VALUES ($1,$2,$3)
-         ON CONFLICT (account_code, trade_date) DO UPDATE SET nav = EXCLUDED.nav, updated_at = now()`,
-        [account, n.date, n.total]
+        `INSERT INTO account_days (account_code, trade_date, nav, ending_cash) VALUES ($1,$2,$3,$4)
+         ON CONFLICT (account_code, trade_date) DO UPDATE
+           SET nav = EXCLUDED.nav, ending_cash = COALESCE(EXCLUDED.ending_cash, account_days.ending_cash), updated_at = now()`,
+        [account, n.date, n.total, n.cash]
       );
     }
     const posKeys = new Set<string>();

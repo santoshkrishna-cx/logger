@@ -113,11 +113,24 @@ async function loadFills(): Promise<Fill[]> {
   }));
 }
 
+interface CashDayRow { account_code: string; trade_date: string; opening_cash: number | null; ending_cash: number | null }
 async function loadOpeningCash(): Promise<OpeningCash> {
-  const rows = await q<{ account_code: string; trade_date: string; opening_cash: number | null }>(
-    "SELECT account_code, trade_date, opening_cash FROM account_days WHERE opening_cash IS NOT NULL");
+  const rows = await q<CashDayRow>("SELECT account_code, trade_date, opening_cash, ending_cash FROM account_days ORDER BY account_code, trade_date");
+  const byAcct = new Map<string, CashDayRow[]>();
+  for (const r of rows) (byAcct.get(r.account_code) ?? byAcct.set(r.account_code, []).get(r.account_code)!).push(r);
   const o: OpeningCash = {};
-  for (const r of rows) (o[r.account_code] ??= {})[r.trade_date] = r.opening_cash;
+  for (const [acct, list] of byAcct) {
+    o[acct] = {};
+    // A day's opening = an explicit figure (typed, or IBKR Cash Report), else the most recent
+    // IBKR end-of-day cash before it. That anchors each day to a real balance instead of a
+    // running total that drifts once deposits and transfers are left out.
+    let priorEnding: number | null = null;
+    for (const r of list) {
+      if (r.opening_cash !== null) o[acct][r.trade_date] = r.opening_cash;
+      else if (priorEnding !== null) o[acct][r.trade_date] = priorEnding;
+      if (r.ending_cash !== null) priorEnding = r.ending_cash;
+    }
+  }
   return o;
 }
 
