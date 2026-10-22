@@ -36,12 +36,11 @@ export function LogPage() {
 
   const l = log.data;
   const owners = Object.fromEntries(me.accounts.map(a => [a.code, a.ownerName]));
-  const section = (title: string, sub: string, list: TradeView[]) => list.length ? (
-    <div className="section">
-      <h3>{title} <small>{sub}</small></h3>
-      {list.map(t => <TradeTicket key={t.key} t={t} rules={l!.rules} bands={l!.bands} me={me.user.account} day={l!.date} />)}
-    </div>
-  ) : null;
+  const timeOf = (t: TradeView) => (t.status === "closed" ? (t.closeAt ?? t.openAt) : t.openAt);
+  const tagOf = (t: TradeView, date: string) =>
+    t.status !== "closed" ? "Open"
+      : t.contract.expiry && t.avgExit === 0 ? "Expired"
+        : (t.carryIn || t.openDate < date) ? "Carried" : "Closed";
 
   return (
     <main className="page">
@@ -72,10 +71,26 @@ export function LogPage() {
                 <div className="stat"><span className="v" style={{ color: l.summary.openLessons ? "var(--loss)" : undefined }}>{l.summary.openLessons}</span><span className="k">Lessons to review together</span></div>
                 {l.cash.map(c => <OpeningCash key={c.account} account={c.account} owner={owners[c.account]} date={l.date} value={c.opening} entered={c.openingEntered} closing={c.closing} />)}
               </div>
-              {section("Round trips", "Opened and closed this day", l.sections.roundTrips)}
-              {section("Carried in and closed", "Opened on an earlier day", l.sections.carriedIn)}
-              {section("Still open at the close", "No realized P&L yet", l.sections.stillOpen)}
-              {!l.sections.roundTrips.length && !l.sections.carriedIn.length && !l.sections.stillOpen.length && <p className="muted" style={{ marginTop: 20 }}>No trades for {scopeIsCombined(scope, me) ? "this selection" : scopeLabel(scope, me)} on this day.</p>}
+              {(() => {
+                const all = [...l.sections.roundTrips, ...l.sections.carriedIn, ...l.sections.stillOpen].sort((a, b) => (timeOf(a) < timeOf(b) ? -1 : 1));
+                if (!all.length) return <p className="muted" style={{ marginTop: 20 }}>No trades for {scopeIsCombined(scope, me) ? "this selection" : scopeLabel(scope, me)} on this day.</p>;
+                const openCash: Record<string, number | null> = Object.fromEntries(l.cash.map(c => [c.account, c.opening]));
+                const rnd = (x: number) => Math.round(x * 100) / 100;
+                return (
+                  <div className="section">
+                    <h3>Trades <small>Chronological — each open tied to its close or expiry</small></h3>
+                    {all.map(t => {
+                      const cost = t.avgEntry !== null ? Math.abs(t.avgEntry) * t.quantity * t.multiplier : null;
+                      const nav = l.nav[t.account] ?? null;
+                      const oc = openCash[t.account] ?? null;
+                      return <TradeTicket key={t.key} t={t} rules={l.rules} bands={l.bands} me={me.user.account} day={l.date}
+                        tag={tagOf(t, l.date)}
+                        pctOfPortfolio={cost !== null && nav ? rnd((cost / nav) * 100) : null}
+                        pctOfCash={cost !== null && oc ? rnd((cost / oc) * 100) : null} />;
+                    })}
+                  </div>
+                );
+              })()}
               {l.sections.removed.length > 0 && (
                 <div className="section">
                   <h3>Removed as erroneous <small>{l.sections.removed.length} left out of P&amp;L and stats</small>

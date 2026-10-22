@@ -250,3 +250,9 @@ a.cal-cell:hover { outline: 2px solid var(--accent); outline-offset: -2px; }
 
 /* Trade row: return % under the P&L pill */
 .sum .pl .pp-ret { display: block; font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 2px; }
+
+/* Trade status tags */
+.flag.tag-closed { border-color: var(--win); color: var(--win); font-weight: 600; }
+.flag.tag-expired { border-color: var(--line-strong); color: var(--muted); font-weight: 600; }
+.flag.tag-carried { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.flag.tag-open { border-color: var(--loss); color: var(--loss); font-weight: 600; }

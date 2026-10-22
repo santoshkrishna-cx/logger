@@ -23,6 +23,7 @@ export interface LogDay {
   sections: { roundTrips: TradeView[]; carriedIn: TradeView[]; stillOpen: TradeView[]; removed: TradeView[] };
   summary: { realized: Record<string, number>; total: number; trades: number; wins: number; discipline: number | null; awaitingReview: number; openLessons: number };
   cash: CashDay[];
+  nav: Record<string, number>;
   rules: Rule[];
   bands: BandSettings;
 }

@@ -2,7 +2,7 @@ import { daySections, r2 } from "@logger/core";
 import { Router } from "express";
 import { z } from "zod";
 import { ah } from "../http.js";
-import { loadContext, scopeAccounts, type TradeView } from "../services/data.js";
+import { latestNav, loadContext, scopeAccounts, type TradeView } from "../services/data.js";
 
 export const logRouter = Router();
 const scope = z.string().default("all");
@@ -50,6 +50,7 @@ logRouter.get("/log", ah(async (req, res) => {
       openLessons: counted.filter(t => t.lesson && !t.lessonReviewComplete).length
     },
     cash: ctx.cashDays.filter(d => d.date === date && codes.has(d.account)),
+    nav: Object.fromEntries(await latestNav(date)),
     rules: ctx.rules,
     bands: ctx.settings.pnlBands
   });

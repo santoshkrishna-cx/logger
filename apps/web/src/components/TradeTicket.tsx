@@ -43,7 +43,7 @@ function JournalText({ value, placeholder, onSave, className }: { value: string;
   );
 }
 
-export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false }: { t: TradeView; rules: Rule[]; bands: BandSettings; me: string; day?: string; defaultOpen?: boolean }) {
+export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false, tag, pctOfPortfolio, pctOfCash }: { t: TradeView; rules: Rule[]; bands: BandSettings; me: string; day?: string; defaultOpen?: boolean; tag?: string; pctOfPortfolio?: number | null; pctOfCash?: number | null }) {
   const [open, setOpen] = useState(defaultOpen);
   const [removing, setRemoving] = useState(false);
   const [reason, setReason] = useState(REASONS[0]);
@@ -62,6 +62,7 @@ export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false }: {
   const base = `/api/trades/${encodeURIComponent(t.key)}`;
 
   const flags: JSX.Element[] = [];
+  if (tag) flags.push(<span key="tag" className={`flag tag-${tag.toLowerCase()}`}>{tag}</span>);
   if (t.removed) flags.push(<span key="rm" className="flag">Removed: {t.journal.removedReason}</span>);
   if (t.discipline.broken.length) flags.push(<span key="br" className="flag warn">{t.discipline.broken.length} rule{t.discipline.broken.length > 1 ? "s" : ""} broken</span>);
   if (t.lesson) flags.push(t.lessonReviewComplete
@@ -121,6 +122,8 @@ export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false }: {
               <div><b>{money(t.commission, { sign: false, cents: true })}</b><span>Commissions</span></div>
               <div><b>{t.profitPct === null ? "—" : pct(t.profitPct)}</b><span>Return on cost</span></div>
               <div><b>{cashAfter === null ? "—" : money(cashAfter, { sign: false })}</b><span>Cash after</span></div>
+              {pctOfPortfolio !== undefined && <div><b>{pctOfPortfolio === null ? "—" : pct(pctOfPortfolio)}</b><span>% of portfolio</span></div>}
+              {pctOfCash !== undefined && <div><b>{pctOfCash === null ? "—" : pct(pctOfCash)}</b><span>% of cash</span></div>}
               <div><b>{hold === null ? (t.status === "open" ? "Open" : "—") : hold >= 1440 ? `${Math.round(hold / 1440)} d` : `${hold} min`}</b><span>Time in trade</span></div>
             </div>
           </div>
