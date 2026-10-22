@@ -3,7 +3,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { q } from "../db.js";
 import { ah } from "../http.js";
-import { loadContext, type Context, type TradeView } from "../services/data.js";
+import { loadContext, scopeAccounts, type Context, type TradeView } from "../services/data.js";
 
 export const dashboardRouter = Router();
 
@@ -57,7 +57,7 @@ dashboardRouter.get("/dashboard", ah(async (req, res) => {
   const { period, date, account } = z.object({
     period: z.enum(["day", "week", "month", "year"]).default("day"),
     date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default(todayET()),
-    account: z.enum(["both", "anilsub01", "anilsub02"]).default("both")
+    account: z.string().default("all")
   }).parse(req.query);
   const { from, to } = periodRange(period as Period, date);
   const ctx = await loadContext();
@@ -67,7 +67,8 @@ dashboardRouter.get("/dashboard", ah(async (req, res) => {
   const marks = new Map(markRows.map(m => [`${m.account_code}|${m.conid}`, m.position_value]));
 
   const byAccount = await Promise.all(ctx.accounts.map(a => figures(ctx, a.code, from, to, marks)));
-  const scope = account === "both" ? byAccount : byAccount.filter(a => a.account === account);
+  const codes = scopeAccounts(account, ctx.accounts);
+  const scope = byAccount.filter(a => codes.has(a.account));
   const sumOf = (k: "realized" | "trades" | "wins" | "openContracts" | "openCost" | "openLessons") => r2(scope.reduce((s, a) => s + (a[k] ?? 0), 0));
   const nullableSum = (k: "cash" | "nav" | "cashChange") => (scope.every(a => a[k] === null) ? null : r2(scope.reduce((s, a) => s + (a[k] ?? 0), 0)));
   const trades = sumOf("trades");

@@ -8,7 +8,8 @@ import { BandLegend } from "../components/BandLegend";
 import { Pnl } from "../components/Pnl";
 import { ScopeSwitch } from "../components/ScopeSwitch";
 import { dayShort, money, pct, personClass, price, rangeLabel } from "../format";
-import { useParam, useScope } from "../hooks";
+import { useMe, useParam, useScope } from "../hooks";
+import { accountInScope, scopeIsCombined, scopeLabel } from "../scope";
 
 interface Position { key: string; account: string; owner: string; contract: string; direction: string; quantity: number; avgEntry: number | null; costBasis: number | null; markValue: number | null }
 interface Figures {
@@ -32,6 +33,7 @@ export function DashboardPage() {
   const [period, setPeriod] = useParam<Period>("period", "day");
   const [date, setDate] = useParam<string>("date", todayET());
   const [scope, setScope] = useScope();
+  const { data: me } = useMe();
   const nav = useNavigate();
   const q = useQuery({ queryKey: ["dashboard", period, date, scope], queryFn: () => api.get<Dashboard>("/api/dashboard" + qs({ period, date, account: scope })) });
   const d = q.data;
@@ -42,7 +44,7 @@ export function DashboardPage() {
     <main className="page">
       <div className="page-head">
         <div>
-          <h1>{scope === "both" ? "Combined" : scope === "anilsub02" ? "Santosh" : "Anil"}</h1>
+          <h1>{me ? scopeLabel(scope, me) : " "}</h1>
           <p className="lede">{d ? rangeLabel(period, d.range.from, d.range.to) : " "}</p>
         </div>
         <div className="controls">
@@ -66,7 +68,7 @@ export function DashboardPage() {
           <div className="grid cols-4">
             <div className="panel figure">
               <div className="k">Realized P&amp;L</div>
-              <div className="v"><Pnl value={c.realized} bands={scope === "both" ? scaled(d.bands, 2) : d.bands} /></div>
+              <div className="v"><Pnl value={c.realized} bands={me && scopeIsCombined(scope, me) ? scaled(d.bands, 2) : d.bands} /></div>
               <div className="sub">{c.previousRealized || c.realized ? <>{money(delta)} against {PREV[period]}</> : "No closed trades"}</div>
             </div>
             <div className="panel figure">
@@ -77,7 +79,7 @@ export function DashboardPage() {
             <div className="panel figure">
               <div className="k">Account value (IBKR)</div>
               <div className="v">{money(c.nav, { sign: false })}</div>
-              <div className="sub">{d.byAccount.filter(a => scope === "both" || a.account === scope).map(a => a.navAsOf ? `${a.owner} as of ${dayShort(a.navAsOf)}` : `${a.owner}: next Activity report`).join(". ")}</div>
+              <div className="sub">{d.byAccount.filter(a => !me || accountInScope(scope, a.account, me)).map(a => a.navAsOf ? `${a.owner} as of ${dayShort(a.navAsOf)}` : `${a.owner}: next Activity report`).join(". ")}</div>
             </div>
             <div className="panel figure">
               <div className="k">Open position at period end</div>
@@ -103,7 +105,7 @@ export function DashboardPage() {
                 <thead><tr><th className="l">Person</th><th>Realized</th><th>Trades</th><th>Win rate</th><th>Rules followed</th><th>Cash</th><th>Account value</th><th>Open contracts</th><th>Lessons open</th></tr></thead>
                 <tbody>
                   {d.byAccount.map(a => (
-                    <tr key={a.account} className="clickable" aria-selected={scope === a.account} onClick={() => setScope(scope === a.account ? "both" : (a.account as Scope))}>
+                    <tr key={a.account} className="clickable" aria-selected={scope === a.account} onClick={() => setScope(scope === a.account ? "all" : a.account)}>
                       <td className="l"><span className={`chip ${personClass(a.account)}`}>{a.owner}</span></td>
                       <td><Pnl value={a.realized} bands={d.bands} /></td>
                       <td>{a.trades}</td><td>{pct(a.winRate)}</td><td>{pct(a.discipline)}</td>

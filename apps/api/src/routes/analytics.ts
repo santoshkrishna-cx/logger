@@ -2,7 +2,7 @@ import { analyze } from "@logger/core";
 import { Router } from "express";
 import { z } from "zod";
 import { ah } from "../http.js";
-import { loadContext } from "../services/data.js";
+import { loadContext, scopeAccounts } from "../services/data.js";
 
 export const analyticsRouter = Router();
 
@@ -10,11 +10,12 @@ analyticsRouter.get("/analytics", ah(async (req, res) => {
   const { from, to, account } = z.object({
     from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default("1900-01-01"),
     to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).default("2999-12-31"),
-    account: z.enum(["both", "anilsub01", "anilsub02"]).default("both")
+    account: z.string().default("all")
   }).parse(req.query);
   const ctx = await loadContext();
+  const codes = scopeAccounts(account, ctx.accounts);
   const trades = ctx.trades.filter(t =>
-    (account === "both" || t.account === account) &&
+    codes.has(t.account) &&
     ((t.closeDate ?? t.openDate) >= from) && ((t.closeDate ?? t.openDate) <= to));
   const limits: Record<string, number> = {};
   for (const [k, v] of Object.entries(ctx.settings.dailyLossLimit)) if (v) limits[k] = v;

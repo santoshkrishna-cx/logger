@@ -2,19 +2,19 @@ import { daySections, r2 } from "@logger/core";
 import { Router } from "express";
 import { z } from "zod";
 import { ah } from "../http.js";
-import { loadContext, type TradeView } from "../services/data.js";
+import { loadContext, scopeAccounts, type TradeView } from "../services/data.js";
 
 export const logRouter = Router();
-const scope = z.enum(["both", "anilsub01", "anilsub02"]).default("both");
-const inScope = (s: string, a: string) => s === "both" || s === a;
+const scope = z.string().default("all");
 
 /** Trading days with realized P&L, newest first, for the day rail. */
 logRouter.get("/days", ah(async (req, res) => {
   const account = scope.parse(req.query.account);
   const ctx = await loadContext();
+  const codes = scopeAccounts(account, ctx.accounts);
   const days = new Map<string, Record<string, number>>();
   for (const t of ctx.trades) {
-    if (!inScope(account, t.account)) continue;
+    if (!codes.has(t.account)) continue;
     for (const f of t.fills) if (!days.has(f.tradeDate)) days.set(f.tradeDate, {});
     if (t.removed || t.status !== "closed" || t.realizedPnl === null) continue;
     const d = days.get(t.closeDate!) ?? {};
@@ -30,7 +30,8 @@ logRouter.get("/days", ah(async (req, res) => {
 logRouter.get("/log", ah(async (req, res) => {
   const { date, account } = z.object({ date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), account: scope }).parse(req.query);
   const ctx = await loadContext();
-  const trades = ctx.trades.filter(t => inScope(account, t.account));
+  const codes = scopeAccounts(account, ctx.accounts);
+  const trades = ctx.trades.filter(t => codes.has(t.account));
   const s = daySections<TradeView>(trades, date);
   const counted = [...s.roundTrips, ...s.carriedIn];
   const realized: Record<string, number> = {};
@@ -48,7 +49,7 @@ logRouter.get("/log", ah(async (req, res) => {
       awaitingReview: counted.filter(t => !t.journal.review?.trim()).length,
       openLessons: counted.filter(t => t.lesson && !t.lessonReviewComplete).length
     },
-    cash: ctx.cashDays.filter(d => d.date === date && inScope(account, d.account)),
+    cash: ctx.cashDays.filter(d => d.date === date && codes.has(d.account)),
     rules: ctx.rules,
     bands: ctx.settings.pnlBands
   });

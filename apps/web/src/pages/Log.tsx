@@ -9,6 +9,7 @@ import { ScopeSwitch } from "../components/ScopeSwitch";
 import { TradeTicket } from "../components/TradeTicket";
 import { dayLong, dayShort, money, pct } from "../format";
 import { useScope } from "../hooks";
+import { accountInScope, scopeIsCombined, scopeLabel } from "../scope";
 
 interface DayRow { date: string; byAccount: Record<string, number>; total: number }
 
@@ -51,7 +52,7 @@ export function LogPage() {
       <div className="log">
         <nav className="rail" aria-label="Trading days">
           {days.data?.map(d => (
-            <Link key={d.date} to={`/log/${d.date}${scope !== "both" ? `?who=${scope}` : ""}`} className={`dayb ${d.date === day ? "active" : ""}`} aria-current={d.date === day ? "page" : undefined}>
+            <Link key={d.date} to={`/log/${d.date}${scope !== "all" ? `?who=${scope}` : ""}`} className={`dayb ${d.date === day ? "active" : ""}`} aria-current={d.date === day ? "page" : undefined}>
               <span>{dayShort(d.date)}</span><Pnl value={d.total} bands={l?.bands} />
             </Link>
           ))}
@@ -61,10 +62,10 @@ export function LogPage() {
             <>
               <div className="dayhead">
                 <h1>{dayLong(l.date)}</h1>
-                {Object.keys(owners).filter(a => scope === "both" || scope === a).map(a => (
+                {Object.keys(owners).filter(a => accountInScope(scope, a, me)).map(a => (
                   <div className="stat" key={a}><span className="v"><Pnl value={l.summary.realized[a] ?? 0} bands={l.bands} /></span><span className="k">{owners[a]} realized</span></div>
                 ))}
-                {scope === "both" && <div className="stat"><span className="v"><Pnl value={l.summary.total} /></span><span className="k">Combined</span></div>}
+                {scopeIsCombined(scope, me) && <div className="stat"><span className="v"><Pnl value={l.summary.total} /></span><span className="k">Combined</span></div>}
                 <div className="stat"><span className="v">{l.summary.trades ? `${l.summary.wins} of ${l.summary.trades}` : "0"}</span><span className="k">Winning trades</span></div>
                 <div className="stat"><span className="v">{pct(l.summary.discipline)}</span><span className="k">Rules followed</span></div>
                 <div className="stat"><span className="v">{l.summary.awaitingReview}</span><span className="k">Awaiting review</span></div>
@@ -74,7 +75,7 @@ export function LogPage() {
               {section("Round trips", "Opened and closed this day", l.sections.roundTrips)}
               {section("Carried in and closed", "Opened on an earlier day", l.sections.carriedIn)}
               {section("Still open at the close", "No realized P&L yet", l.sections.stillOpen)}
-              {!l.sections.roundTrips.length && !l.sections.carriedIn.length && !l.sections.stillOpen.length && <p className="muted" style={{ marginTop: 20 }}>No trades for {scope === "both" ? "either of you" : owners[scope]} on this day.</p>}
+              {!l.sections.roundTrips.length && !l.sections.carriedIn.length && !l.sections.stillOpen.length && <p className="muted" style={{ marginTop: 20 }}>No trades for {scopeIsCombined(scope, me) ? "this selection" : scopeLabel(scope, me)} on this day.</p>}
               {l.sections.removed.length > 0 && (
                 <div className="section">
                   <h3>Removed as erroneous <small>{l.sections.removed.length} left out of P&amp;L and stats</small>

@@ -1,8 +1,13 @@
 import type { BandSettings, CashDay, PnlBand, RatingValue, Rule, Trade, Discipline } from "@logger/core";
 
-export type Scope = "both" | "anilsub01" | "anilsub02";
+// "all" | "g:<groupCode>" | "p:<ownerName>" | "<accountCode>"
+export type Scope = string;
 
-export interface Me { user: { id: string; email: string; name: string | null; avatarUrl: string | null; account: string }; accounts: { code: string; ownerName: string }[] }
+export interface Me {
+  user: { id: string; email: string; name: string | null; avatarUrl: string | null; account: string };
+  accounts: { code: string; ownerName: string; groupCode: string }[];
+  groups: { code: string; name: string }[];
+}
 
 export interface LessonReview { traderNote: string | null; traderAckAt: string | null; reviewerAckAt: string | null; discussedOn: string | null; completedAt: string | null; openedAt: string; overdue: boolean; waitingOn: ("trader" | "reviewer")[] }
 

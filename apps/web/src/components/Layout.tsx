@@ -22,6 +22,7 @@ export function Layout({ me }: { me: Me }) {
             {link("/log", "Log")}
             {link("/lessons", "Lessons", lessons.data?.waitingOnMe)}
             {link("/analytics", "Analytics")}
+            {link("/calendar", "Calendar")}
             {link("/rules", "Rules")}
             {link("/import", "Import")}
             {link("/settings", "Settings")}

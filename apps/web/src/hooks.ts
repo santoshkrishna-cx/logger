@@ -11,4 +11,4 @@ export function useParam<T extends string>(name: string, fallback: T): [T, (v: T
   const set = (v: T) => { const p = new URLSearchParams(params); if (v === fallback) p.delete(name); else p.set(name, v); setParams(p, { replace: true }); };
   return [value, set];
 }
-export const useScope = () => useParam<Scope>("who", "both");
+export const useScope = () => useParam<Scope>("who", "all");
