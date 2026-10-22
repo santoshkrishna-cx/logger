@@ -73,6 +73,8 @@ export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false }: {
 
   const showTime = t.carryIn || (day && t.openDate < day) ? (t.closeAt ?? t.openAt) : t.openAt;
   const hold = t.holdMinutes;
+  const cost = t.avgEntry !== null ? Math.abs(t.avgEntry) * t.quantity * t.multiplier : null;
+  const cashAfter = t.fills.length ? t.fills[t.fills.length - 1].cashAfter : null;
 
   return (
     <article className={`trade band-${t.band} ${t.removed ? "removed" : ""}`}>
@@ -82,7 +84,9 @@ export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false }: {
         <span className="ct">{t.contract.name}{t.zeroDte && <em>0DTE</em>}</span>
         <span className="q">{t.direction} {t.quantity}</span>
         <span className="px">{price(t.avgEntry)} → {t.avgExit !== null ? price(t.avgExit) : "…"}</span>
-        <span className="pl">{t.status === "closed" ? <Pnl value={t.realizedPnl} band={t.band} pill /> : <span className="muted">{t.openQuantity} open</span>}</span>
+        <span className="pl">{t.status === "closed"
+          ? <><Pnl value={t.realizedPnl} band={t.band} pill />{t.profitPct !== null && <small className="pp-ret">{t.profitPct > 0 ? "+" : ""}{t.profitPct}%</small>}</>
+          : <span className="muted">{t.openQuantity} open</span>}</span>
         <span className="pp"><RuleStrip rules={rules} ratings={t.ratings} discipline={t.discipline} /></span>
         <span className="flags">{flags}</span>
         <span className="chev" aria-hidden="true">›</span>
@@ -113,8 +117,10 @@ export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false }: {
               <div><Pnl value={t.realizedPnl} band={t.band} cents /><span>{t.status === "closed" ? "Realized P&L" : "Realized so far"}</span></div>
               <div><b>{price(t.avgEntry)}</b><span>Average {t.direction === "Long" ? "buy" : "sell"}</span></div>
               <div><b>{price(t.avgExit)}</b><span>Average {t.direction === "Long" ? "sell" : "buy"}</span></div>
+              <div><b>{cost === null ? "—" : money(cost, { sign: false })}</b><span>Cost</span></div>
               <div><b>{money(t.commission, { sign: false, cents: true })}</b><span>Commissions</span></div>
               <div><b>{t.profitPct === null ? "—" : pct(t.profitPct)}</b><span>Return on cost</span></div>
+              <div><b>{cashAfter === null ? "—" : money(cashAfter, { sign: false })}</b><span>Cash after</span></div>
               <div><b>{hold === null ? (t.status === "open" ? "Open" : "—") : hold >= 1440 ? `${Math.round(hold / 1440)} d` : `${hold} min`}</b><span>Time in trade</span></div>
             </div>
           </div>
