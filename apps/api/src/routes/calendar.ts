@@ -27,22 +27,29 @@ calendarRouter.get("/calendar", ah(async (req, res) => {
     perDay.set(t.closeDate!, e);
   }
 
-  // Capital base for the % figure. Interim: each in-scope account's most recent IBKR
-  // account value on or before the day, summed. Switches to net deposited capital
-  // once the funding ledger (Phase 2) lands.
+  // Capital base for the % figure: each in-scope account's net deposited capital
+  // (cumulative deposits/withdrawals/transfers) on or before the day. Accounts with no
+  // funding rows yet fall back to their most recent IBKR account value.
   const navRows = await q<{ account_code: string; trade_date: string; nav: number }>(
     "SELECT account_code, trade_date, nav FROM account_days WHERE nav IS NOT NULL ORDER BY trade_date");
+  const cashRows = await q<{ account_code: string; txn_date: string; amount: number }>(
+    "SELECT account_code, txn_date, amount FROM cash_txns ORDER BY txn_date, id");
   const navByAcct = new Map<string, { date: string; nav: number }[]>();
-  for (const r of navRows) {
-    if (!codes.has(r.account_code)) continue;
-    (navByAcct.get(r.account_code) ?? navByAcct.set(r.account_code, []).get(r.account_code)!).push({ date: r.trade_date, nav: r.nav });
-  }
+  const cashByAcct = new Map<string, { date: string; amount: number }[]>();
+  for (const r of navRows) if (codes.has(r.account_code)) (navByAcct.get(r.account_code) ?? navByAcct.set(r.account_code, []).get(r.account_code)!).push({ date: r.trade_date, nav: r.nav });
+  for (const r of cashRows) if (codes.has(r.account_code)) (cashByAcct.get(r.account_code) ?? cashByAcct.set(r.account_code, []).get(r.account_code)!).push({ date: r.txn_date, amount: r.amount });
+  const investedAsOf = (acct: string, date: string): number | null => {
+    const list = cashByAcct.get(acct); if (!list) return null;
+    let s = 0; for (const r of list) { if (r.date <= date) s += r.amount; else break; } return r2(s);
+  };
+  const navAsOf = (acct: string, date: string): number | null => {
+    let v: number | null = null; for (const r of navByAcct.get(acct) ?? []) { if (r.date <= date) v = r.nav; else break; } return v;
+  };
   const capitalBase = (date: string): number | null => {
     let sum = 0, any = false;
-    for (const list of navByAcct.values()) {
-      let v: number | null = null;
-      for (const r of list) { if (r.date <= date) v = r.nav; else break; }
-      if (v !== null) { sum += v; any = true; }
+    for (const acct of codes) {
+      const base = investedAsOf(acct, date) ?? navAsOf(acct, date);
+      if (base !== null) { sum += base; any = true; }
     }
     return any ? r2(sum) : null;
   };

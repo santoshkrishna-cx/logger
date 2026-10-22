@@ -9,6 +9,7 @@ import { errorHandler } from "./http.js";
 import { analyticsRouter } from "./routes/analytics.js";
 import { calendarRouter } from "./routes/calendar.js";
 import { dashboardRouter } from "./routes/dashboard.js";
+import { fundingRouter } from "./routes/funding.js";
 import { importsRouter } from "./routes/imports.js";
 import { journalRouter } from "./routes/journal.js";
 import { lessonsRouter } from "./routes/lessons.js";
@@ -45,6 +46,7 @@ export function createApp() {
   app.use("/api", dashboardRouter);
   app.use("/api", analyticsRouter);
   app.use("/api", calendarRouter);
+  app.use("/api", fundingRouter);
   app.use("/api", importsRouter);
   app.use("/api", syncRouter);
   app.use("/api", settingsRouter);

@@ -110,3 +110,22 @@ describe("analyze", () => {
     expect(a.lessons).toEqual({ total: 1, completed: 0, completionRate: 0 });
   });
 });
+
+describe("parseFlex funding (cash transactions and transfers)", () => {
+  const xml = `<FlexQueryResponse><FlexStatements><FlexStatement>
+    <CashTransactions>
+      <CashTransaction accountId="U17271146" acctAlias="anilsub02" type="Deposits/Withdrawals" amount="10000" currency="USD" dateTime="20260901" transactionID="D1" description="ACH deposit"/>
+      <CashTransaction accountId="U17271146" acctAlias="anilsub02" type="Broker Interest Paid" amount="-3.5" currency="USD" dateTime="20260902" transactionID="I1"/>
+    </CashTransactions>
+    <Transfers>
+      <Transfer accountId="U17271146" acctAlias="anilsub02" type="INTERNAL" direction="IN" cashTransfer="5000" account="U0000000" dateTime="20260903" transactionID="T1"/>
+    </Transfers>
+  </FlexStatement></FlexStatements></FlexQueryResponse>`;
+  const r = parseFlex(xml);
+  it("reads deposits, interest and internal transfers", () => {
+    const by = Object.fromEntries(r.cashTxns.map(c => [c.id, c]));
+    expect(by.D1).toMatchObject({ category: "deposit", amount: 10000, alias: "anilsub02" });
+    expect(by.I1.category).toBe("interest");
+    expect(by.T1).toMatchObject({ category: "transfer_in", amount: 5000, counterparty: "U0000000" });
+  });
+});

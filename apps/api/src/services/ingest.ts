@@ -123,6 +123,15 @@ export async function ingest(report: FlexReport, source: Source, opts: { commit:
         [account, p.date, p.conid, p.symbol, p.description, p.quantity, p.markPrice, p.positionValue, p.costBasis, p.unrealizedPnl]
       );
     }
+    for (const ct of report.cashTxns) {
+      const account = match(ct.ibkrAccount, ct.alias);
+      if (!account || !ct.date) continue;
+      await c.query(
+        `INSERT INTO cash_txns (id, account_code, txn_date, category, amount, currency, counterparty, description, source, raw)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO NOTHING`,
+        [ct.id, account, ct.date, ct.category, ct.amount, ct.currency, ct.counterparty, ct.description, source, JSON.stringify(ct.raw)]
+      );
+    }
   });
   result.committed = true;
   return result;

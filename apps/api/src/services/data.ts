@@ -79,6 +79,21 @@ export async function loadGroups(): Promise<Group[]> {
   return await q<Group>("SELECT code, name FROM groups ORDER BY name");
 }
 
+export interface CashTxn { account: string; date: string; category: string; amount: number; counterparty: string | null; description: string }
+export async function loadCashTxns(): Promise<CashTxn[]> {
+  return (await q<{ account_code: string; txn_date: string; category: string; amount: number; counterparty: string | null; description: string }>(
+    "SELECT account_code, txn_date, category, amount, counterparty, description FROM cash_txns ORDER BY txn_date, id"
+  )).map(r => ({ account: r.account_code, date: r.txn_date, category: r.category, amount: r.amount, counterparty: r.counterparty, description: r.description }));
+}
+
+/** Latest IBKR account value (NAV) per account, on or before `asOf`. */
+export async function latestNav(asOf: string): Promise<Map<string, number>> {
+  const rows = await q<{ account_code: string; nav: number }>(
+    `SELECT DISTINCT ON (account_code) account_code, nav FROM account_days
+      WHERE nav IS NOT NULL AND trade_date <= $1 ORDER BY account_code, trade_date DESC`, [asOf]);
+  return new Map(rows.map(r => [r.account_code, r.nav]));
+}
+
 export async function loadRules(): Promise<Rule[]> {
   return (await q<{ id: string; text: string; active: boolean; position: number }>(
     "SELECT id, text, active, position FROM rules ORDER BY position, created_at"

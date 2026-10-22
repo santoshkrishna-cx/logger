@@ -14,12 +14,18 @@ export interface ParsedPosition {
   ibkrAccount: string; alias: string; date: string; conid: string; symbol: string; description: string;
   quantity: number; markPrice: number | null; positionValue: number | null; costBasis: number | null; unrealizedPnl: number | null;
 }
+export type CashCategory = "deposit" | "withdrawal" | "transfer_in" | "transfer_out" | "fee" | "interest" | "dividend" | "other";
+export interface ParsedCashTxn {
+  ibkrAccount: string; alias: string; id: string; date: string;
+  category: CashCategory; amount: number; currency: string; counterparty: string | null; description: string; raw: Record<string, string>;
+}
 export interface FlexReport {
   kind: "activity" | "trade-confirmation" | "unknown";
   fills: ParsedFill[];
   cash: ParsedCash[];
   nav: ParsedNav[];
   positions: ParsedPosition[];
+  cashTxns: ParsedCashTxn[];
 }
 
 type Rec = Record<string, string>;
@@ -127,7 +133,37 @@ export function recordToFill(rec: Rec): ParsedFill | null {
   };
 }
 
-const TAGS = new Set(["Trade", "TradeConfirm", "CashReportCurrency", "EquitySummaryByReportDateInBase", "OpenPosition"]);
+const TAGS = new Set(["Trade", "TradeConfirm", "CashReportCurrency", "EquitySummaryByReportDateInBase", "OpenPosition", "CashTransaction", "Transfer"]);
+
+const normRec = (rec: Rec): Rec => { const n: Rec = {}; for (const k in rec) n[norm(k)] = rec[k]; return n; };
+
+function parseCashTransaction(rec: Rec, account: string, alias: string): ParsedCashTxn | null {
+  const n = normRec(rec);
+  const amount = num(n.amount);
+  if (amount === null || amount === 0) return null;
+  const t = (n.type || "").toLowerCase();
+  const category: CashCategory =
+    /deposit|withdraw/.test(t) ? (amount >= 0 ? "deposit" : "withdrawal")
+    : /interest/.test(t) ? "interest" : /dividend/.test(t) ? "dividend"
+    : /fee|commission|tax/.test(t) ? "fee" : "other";
+  const date = isoDate(n.settledate || n.datetime || n.reportdate || n.date);
+  if (!date) return null;
+  const id = n.transactionid || `ct_${account}_${date}_${amount}_${t}`.replace(/\s+/g, "");
+  return { ibkrAccount: account, alias, id, date, category, amount: r2(amount), currency: n.currency || "USD", counterparty: null, description: n.description || "", raw: rec };
+}
+
+function parseTransfer(rec: Rec, account: string, alias: string): ParsedCashTxn | null {
+  const n = normRec(rec);
+  const amt = num(n.cashtransfer) ?? num(n.amount);
+  if (amt === null || amt === 0) return null;
+  const inbound = (n.direction || "").toUpperCase() === "IN" || amt > 0;
+  const amount = Math.abs(amt) * (inbound ? 1 : -1);
+  const date = isoDate(n.datetime || n.date || n.reportdate || n.settledate);
+  if (!date) return null;
+  const counterparty = n.account || n.otheracct || n.toacct || null;
+  const id = n.transactionid || `tr_${account}_${date}_${amount}_${counterparty || ""}`.replace(/\s+/g, "");
+  return { ibkrAccount: account, alias, id, date, category: inbound ? "transfer_in" : "transfer_out", amount: r2(amount), currency: n.currency || "USD", counterparty, description: n.description || n.type || "", raw: rec };
+}
 
 function walk(node: unknown, tag: string | null, out: { tag: string; rec: Rec }[]) {
   if (Array.isArray(node)) {
@@ -154,7 +190,7 @@ function parseXml(text: string): FlexReport {
   }
   const nodes: { tag: string; rec: Rec }[] = [];
   walk(doc, null, nodes);
-  const report: FlexReport = { kind: "unknown", fills: [], cash: [], nav: [], positions: [] };
+  const report: FlexReport = { kind: "unknown", fills: [], cash: [], nav: [], positions: [], cashTxns: [] };
   for (const { tag, rec } of nodes) {
     const g = getter(rec);
     if (tag === "Trade" || tag === "TradeConfirm") {
@@ -182,6 +218,12 @@ function parseXml(text: string): FlexReport {
         markPrice: num(rec.markPrice), positionValue: num(rec.positionValue),
         costBasis: num(rec.costBasisMoney), unrealizedPnl: num(rec.fifoPnlUnrealized)
       });
+    } else if (tag === "CashTransaction") {
+      const ct = parseCashTransaction(rec, g("account") || "", g("alias") || "");
+      if (ct) report.cashTxns.push(ct);
+    } else if (tag === "Transfer") {
+      const tr = parseTransfer(rec, g("account") || "", g("alias") || "");
+      if (tr) report.cashTxns.push(tr);
     }
   }
   return report;
@@ -210,7 +252,7 @@ export function parseCsvRows(text: string): string[][] {
 }
 
 function parseCsv(text: string): FlexReport {
-  const report: FlexReport = { kind: "unknown", fills: [], cash: [], nav: [], positions: [] };
+  const report: FlexReport = { kind: "unknown", fills: [], cash: [], nav: [], positions: [], cashTxns: [] };
   let header: string[] | null = null;
   for (let row of parseCsvRows(text)) {
     if (!row.length || row.every(c => !c.trim())) continue;

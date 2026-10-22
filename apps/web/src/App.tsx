@@ -4,6 +4,7 @@ import { useMe } from "./hooks";
 import { AnalyticsPage } from "./pages/Analytics";
 import { CalendarPage } from "./pages/Calendar";
 import { DashboardPage } from "./pages/Dashboard";
+import { FundingPage } from "./pages/Funding";
 import { ImportPage } from "./pages/Import";
 import { LessonsPage } from "./pages/Lessons";
 import { LogPage } from "./pages/Log";
@@ -23,6 +24,7 @@ export function App() {
         <Route path="lessons" element={<LessonsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="calendar" element={<CalendarPage />} />
+        <Route path="funding" element={<FundingPage />} />
         <Route path="rules" element={<RulesPage />} />
         <Route path="import" element={<ImportPage />} />
         <Route path="settings" element={<SettingsPage />} />

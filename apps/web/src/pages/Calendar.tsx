@@ -32,7 +32,7 @@ export function CalendarPage() {
       <div className="page-head">
         <div>
           <h1>Calendar</h1>
-          <p className="lede">Each day’s realized P&amp;L in dollars and as a % of account value. Green is an up day, red is down.</p>
+          <p className="lede">Each day’s realized P&amp;L in dollars and as a % of net deposited capital. Green is an up day, red is down.</p>
         </div>
         <div className="controls">
           <div className="seg" role="group" aria-label="Move through time">
@@ -75,7 +75,7 @@ export function CalendarPage() {
           );
         })}
       </div>
-      <p className="muted" style={{ marginTop: 14, fontSize: 13 }}>The % is the day’s P&amp;L over account value. It switches to a share of net deposited capital once the funding ledger is in.</p>
+      <p className="muted" style={{ marginTop: 14, fontSize: 13 }}>The % is the day’s P&amp;L over net deposited capital (an account’s most recent value is used until its funding history is imported).</p>
     </main>
   );
 }
