@@ -88,7 +88,7 @@ try {
 
   const dash = await call(santosh, "GET", "/api/dashboard?period=day&date=2026-10-20");
   check("dashboard combines realized P&L for both", dash.json?.combined?.realized === 910.9, dash.json?.combined);
-  check("dashboard drill-down has each person", dash.json?.byAccount?.length === 2 && dash.json.byAccount.find((a: any) => a.account === "anilsub01").realized === 718.7, dash.json?.byAccount?.map((a: any) => [a.account, a.realized]));
+  check("dashboard drill-down has each person", dash.json?.byAccount?.find((a: any) => a.account === "anilsub01")?.realized === 718.7 && dash.json.byAccount.find((a: any) => a.account === "anilsub02")?.realized === 192.2, dash.json?.byAccount?.map((a: any) => [a.account, a.realized]));
   check("dashboard cash and NAV", dash.json?.combined?.cash === 106275.8 && dash.json.combined.nav === 51071.4, dash.json?.combined);
   check("dashboard open position from MU runner", dash.json?.combined?.openContracts === 5 && dash.json.positions[0].markValue === 1550, dash.json?.positions);
   const santoshOnly = await call(santosh, "GET", "/api/dashboard?period=year&date=2026-10-20&account=anilsub02");

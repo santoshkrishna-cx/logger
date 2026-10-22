@@ -11,7 +11,17 @@ export interface Settings {
   lessonReviewDueDays: number;
 }
 
-export interface Account { code: string; ownerName: string; ibkrAccountId: string | null; ibkrAlias: string | null }
+export interface Account { code: string; ownerName: string; groupCode: string; ibkrAccountId: string | null; ibkrAlias: string | null }
+export interface Group { code: string; name: string }
+
+/** Resolve a scope string to the set of account codes it covers.
+ *  "" | "all" | "both" -> everyone; "g:<code>" -> a group; "p:<owner>" -> a person; else a single account code. */
+export function scopeAccounts(scope: string, accounts: Account[]): Set<string> {
+  if (!scope || scope === "all" || scope === "both") return new Set(accounts.map(a => a.code));
+  if (scope.startsWith("g:")) return new Set(accounts.filter(a => a.groupCode === scope.slice(2)).map(a => a.code));
+  if (scope.startsWith("p:")) return new Set(accounts.filter(a => a.ownerName === scope.slice(2)).map(a => a.code));
+  return new Set(accounts.filter(a => a.code === scope).map(a => a.code));
+}
 
 export interface LessonReview {
   traderNote: string | null;
@@ -60,9 +70,13 @@ export async function loadSettings(): Promise<Settings> {
 }
 
 export async function loadAccounts(): Promise<Account[]> {
-  return (await q<{ code: string; owner_name: string; ibkr_account_id: string | null; ibkr_alias: string | null }>(
-    "SELECT code, owner_name, ibkr_account_id, ibkr_alias FROM accounts ORDER BY code DESC"
-  )).map(a => ({ code: a.code, ownerName: a.owner_name, ibkrAccountId: a.ibkr_account_id, ibkrAlias: a.ibkr_alias }));
+  return (await q<{ code: string; owner_name: string; group_code: string; ibkr_account_id: string | null; ibkr_alias: string | null }>(
+    "SELECT code, owner_name, group_code, ibkr_account_id, ibkr_alias FROM accounts ORDER BY group_code, code DESC"
+  )).map(a => ({ code: a.code, ownerName: a.owner_name, groupCode: a.group_code, ibkrAccountId: a.ibkr_account_id, ibkrAlias: a.ibkr_alias }));
+}
+
+export async function loadGroups(): Promise<Group[]> {
+  return await q<Group>("SELECT code, name FROM groups ORDER BY name");
 }
 
 export async function loadRules(): Promise<Rule[]> {
