@@ -18,6 +18,23 @@ function parseAllowed(v: string): Map<string, string> {
   return m;
 }
 
+export interface FlexSource { group: string; name: string; token: string; tradeConfirmQueryId: string; activityQueryId: string }
+
+/** One Flex-enabled IBKR master per group, built from the environment.
+ *  Adding a group: add a line here, set its FLEX_<X>_* env vars, and insert a groups row. */
+function parseFlexSources(): FlexSource[] {
+  const sources: FlexSource[] = [];
+  const add = (group: string, name: string, prefix: string) => {
+    const token = process.env[`${prefix}TOKEN`] ?? "";
+    const tradeConfirmQueryId = process.env[`${prefix}TRADE_CONFIRM_QUERY_ID`] ?? "";
+    const activityQueryId = process.env[`${prefix}ACTIVITY_QUERY_ID`] ?? "";
+    if (token && (tradeConfirmQueryId || activityQueryId)) sources.push({ group, name, token, tradeConfirmQueryId, activityQueryId });
+  };
+  add("shikharam", "Shikharam LLC", "FLEX_");       // FLEX_TOKEN / FLEX_TRADE_CONFIRM_QUERY_ID / FLEX_ACTIVITY_QUERY_ID
+  add("santoshodc", "Santosh ODC", "FLEX_ODC_");    // FLEX_ODC_TOKEN / FLEX_ODC_TRADE_CONFIRM_QUERY_ID / FLEX_ODC_ACTIVITY_QUERY_ID
+  return sources;
+}
+
 export const config = {
   port: Number(process.env.PORT ?? 4000),
   production: process.env.NODE_ENV === "production",
@@ -37,5 +54,7 @@ export const config = {
     tradeConfirmQueryId: process.env.FLEX_TRADE_CONFIRM_QUERY_ID ?? "",
     activityQueryId: process.env.FLEX_ACTIVITY_QUERY_ID ?? "",
     baseUrl: process.env.FLEX_BASE_URL ?? "https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService"
-  }
+  },
+  // One entry per IBKR master that has Flex credentials set. Drives the per-group sync.
+  flexSources: parseFlexSources()
 };

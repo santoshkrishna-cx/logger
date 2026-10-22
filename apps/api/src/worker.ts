@@ -1,13 +1,16 @@
 import cron from "node-cron";
+import { config } from "./config.js";
 import { runSync } from "./sync/runSync.js";
 
 const tz = "America/New_York";
 const log = (msg: string) => console.log(`[worker ${new Date().toISOString()}] ${msg}`);
 const safe = (kind: "trade-confirmation" | "activity") => async () => {
-  try {
-    const r = await runSync(kind, "schedule");
-    log(`${kind}: +${r.added} fills, ${r.upgraded} upgraded`);
-  } catch (e) { log(`${kind} failed: ${(e as Error).message}`); }
+  for (const src of config.flexSources) {
+    try {
+      const r = await runSync(kind, "schedule", null, src);
+      log(`${src.group} ${kind}: +${r.added} fills, ${r.upgraded} upgraded`);
+    } catch (e) { log(`${src.group} ${kind} failed: ${(e as Error).message}`); }
+  }
 };
 
 // Same-day fills, every 15 minutes from 9:30 to 16:45 ET on weekdays (IBKR lags 5-10 minutes).

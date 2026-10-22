@@ -19,8 +19,8 @@ async function get(url: string) {
  * Two-step Flex Web Service call: SendRequest returns a reference code, GetStatement returns the report.
  * IBKR allows 1 request per second and 10 per minute per token, so waits are generous.
  */
-export async function fetchFlexStatement(queryId: string, maxAttempts = 8): Promise<string> {
-  const { token, baseUrl } = config.flex;
+export async function fetchFlexStatement(queryId: string, token: string = config.flex.token, maxAttempts = 8): Promise<string> {
+  const { baseUrl } = config.flex;
   if (!token || !queryId) throw new Error("Flex token or query ID is not set. Add FLEX_TOKEN and the query IDs to the environment.");
   const sendXml = await get(`${baseUrl}/SendRequest?t=${encodeURIComponent(token)}&q=${encodeURIComponent(queryId)}&v=3`);
   const send = (parser.parse(sendXml).FlexStatementResponse ?? {}) as FlexStatementResponse;
