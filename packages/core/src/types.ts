@@ -58,6 +58,7 @@ export interface Trade {
   avgExit: number | null;
   commission: number;
   realizedPnl: number | null;
+  profitPct: number | null;    // realized P&L as a % of entry notional (null when entry is unknown)
   zeroDte: boolean;
   holdMinutes: number | null;
 }

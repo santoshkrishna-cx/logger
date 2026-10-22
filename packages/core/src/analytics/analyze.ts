@@ -24,7 +24,8 @@ export interface AnalysisOptions {
 export interface Summary {
   trades: number; wins: number; losses: number; net: number; grossWin: number; grossLoss: number;
   winRate: number | null; avgWin: number | null; avgLoss: number | null; profitFactor: number | null; expectancy: number | null;
-  largestWin: number | null; largestLoss: number | null; maxDrawdown: number; longestLosingStreak: number; commissions: number;
+  largestWin: number | null; largestLoss: number | null; maxDrawdown: number; longestLosingStreak: number;
+  commissions: number; avgCommission: number | null; commissionPctOfNet: number | null;
   bestDay: { date: string; net: number } | null; worstDay: { date: string; net: number } | null;
 }
 
@@ -102,6 +103,8 @@ export function analyze(input: ReviewedTrade[], opts: AnalysisOptions): Analysis
     largestLoss: lossL.length ? Math.min(...lossL.map(pnl)) : null,
     maxDrawdown: maxDd, longestLosingStreak: longest,
     commissions: r2(sum(trades.map(t => t.commission))),
+    avgCommission: trades.length ? r2(sum(trades.map(t => t.commission)) / trades.length) : null,
+    commissionPctOfNet: r2(grossWin + grossLoss) !== 0 ? r2((Math.abs(sum(trades.map(t => t.commission))) / Math.abs(grossWin + grossLoss)) * 100) : null,
     bestDay: sortedDays.length ? { date: sortedDays[0].date, net: sortedDays[0].net } : null,
     worstDay: sortedDays.length ? { date: sortedDays[sortedDays.length - 1].date, net: sortedDays[sortedDays.length - 1].net } : null
   };

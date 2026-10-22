@@ -101,6 +101,11 @@ function finish(fs: FillWithState[], carryIn: boolean, pos: number): Trade {
   if (hasRealized) realizedPnl = r2(fs.reduce((s, f) => s + (f.realizedPnl ?? 0), 0));
   else if (status === "closed" && !carryIn) realizedPnl = r2(fs.reduce((s, f) => s + f.netCash, 0));
   else realizedPnl = null;
+  const avgEntry = wavg(ins);
+  const quantity = carryIn ? qty(outs) : qty(ins);
+  // Return on the capital the trade put to work: realized P&L over entry notional.
+  const entryNotional = avgEntry !== null ? Math.abs(avgEntry) * quantity * first.multiplier : null;
+  const profitPct = realizedPnl !== null && entryNotional ? r2((realizedPnl / entryNotional) * 100) : null;
   const contract = parseContract(first.description);
   return {
     key: safeKey(`${first.account}_${first.conid}_${first.id}`),
@@ -120,12 +125,13 @@ function finish(fs: FillWithState[], carryIn: boolean, pos: number): Trade {
     closeAt: status === "closed" ? last.executedAt : null,
     closeDate: status === "closed" ? last.tradeDate : null,
     direction: openSide === "BUY" ? "Long" : "Short",
-    quantity: carryIn ? qty(outs) : qty(ins),
+    quantity,
     openQuantity: Math.abs(pos),
-    avgEntry: wavg(ins),
+    avgEntry,
     avgExit: wavg(outs),
     commission: r2(fs.reduce((s, f) => s + f.commission, 0)),
     realizedPnl,
+    profitPct,
     zeroDte: !!contract.expiry && contract.expiry === first.tradeDate,
     holdMinutes: status === "closed" && !carryIn ? minutesBetween(first.executedAt, last.executedAt) : null
   };

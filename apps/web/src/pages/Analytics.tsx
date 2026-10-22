@@ -50,7 +50,8 @@ export function AnalyticsPage() {
             <div className="panel figure"><div className="k">Net realized</div><div className="v"><Pnl value={s.net} /></div><div className="sub">{s.trades} trades, win rate {pct(s.winRate)}</div></div>
             <div className="panel figure"><div className="k">Average win and loss</div><div className="v" style={{ fontSize: 20 }}><Pnl value={s.avgWin} bands={a.bands} /> / <Pnl value={s.avgLoss} bands={a.bands} /></div><div className="sub">Profit factor {s.profitFactor ?? "—"}, expectancy {money(s.expectancy)} a trade</div></div>
             <div className="panel figure"><div className="k">Worst drawdown</div><div className="v"><Pnl value={s.maxDrawdown} bands={a.bands} /></div><div className="sub">Longest losing streak: {s.longestLosingStreak} trades</div></div>
-            <div className="panel figure"><div className="k">Best and worst day</div><div className="v" style={{ fontSize: 20 }}><Pnl value={s.bestDay?.net} bands={a.bands} /> / <Pnl value={s.worstDay?.net} bands={a.bands} /></div><div className="sub">{s.bestDay && `${dayShort(s.bestDay.date)} and ${dayShort(s.worstDay!.date)}`}. Commissions {money(s.commissions, { sign: false })}</div></div>
+            <div className="panel figure"><div className="k">Best and worst day</div><div className="v" style={{ fontSize: 20 }}><Pnl value={s.bestDay?.net} bands={a.bands} /> / <Pnl value={s.worstDay?.net} bands={a.bands} /></div><div className="sub">{s.bestDay && `${dayShort(s.bestDay.date)} and ${dayShort(s.worstDay!.date)}`}</div></div>
+            <div className="panel figure"><div className="k">Commissions</div><div className="v" style={{ fontSize: 20 }}>{money(s.commissions, { sign: false })}</div><div className="sub">{money(s.avgCommission, { sign: false })} a trade{s.commissionPctOfNet === null ? "" : `, ${pct(s.commissionPctOfNet)} of net P&L`}</div></div>
           </div>
 
           <div className="grid cols-2" style={{ marginTop: 14 }}>

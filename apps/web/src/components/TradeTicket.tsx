@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { BandSettings, RatingValue, Rule } from "@logger/core";
 import { useEffect, useRef, useState } from "react";
 import { api, type TradeView } from "../api";
-import { dayShort, hhmm, money, personClass, price } from "../format";
+import { dayShort, hhmm, money, pct, personClass, price } from "../format";
 import { Pnl } from "./Pnl";
 import { RuleStrip } from "./RuleStrip";
 
@@ -114,6 +114,7 @@ export function TradeTicket({ t, rules, bands, me, day, defaultOpen = false }: {
               <div><b>{price(t.avgEntry)}</b><span>Average {t.direction === "Long" ? "buy" : "sell"}</span></div>
               <div><b>{price(t.avgExit)}</b><span>Average {t.direction === "Long" ? "sell" : "buy"}</span></div>
               <div><b>{money(t.commission, { sign: false, cents: true })}</b><span>Commissions</span></div>
+              <div><b>{t.profitPct === null ? "—" : pct(t.profitPct)}</b><span>Return on cost</span></div>
               <div><b>{hold === null ? (t.status === "open" ? "Open" : "—") : hold >= 1440 ? `${Math.round(hold / 1440)} d` : `${hold} min`}</b><span>Time in trade</span></div>
             </div>
           </div>
