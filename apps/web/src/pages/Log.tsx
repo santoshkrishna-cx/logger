@@ -36,7 +36,8 @@ export function LogPage() {
 
   const l = log.data;
   const owners = Object.fromEntries(me.accounts.map(a => [a.code, a.ownerName]));
-  const timeOf = (t: TradeView) => (t.status === "closed" ? (t.closeAt ?? t.openAt) : t.openAt);
+  // Sort by the same time the ticket shows: the open, except carried-ins whose open was a prior day.
+  const timeOf = (t: TradeView) => (t.carryIn || t.openDate < (l?.date ?? "") ? (t.closeAt ?? t.openAt) : t.openAt);
   const tagOf = (t: TradeView, date: string) =>
     t.status !== "closed" ? "Open"
       : t.assumedExpired || (t.contract.expiry && t.avgExit === 0) ? "Expired"
