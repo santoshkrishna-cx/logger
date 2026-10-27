@@ -153,7 +153,9 @@ export async function loadContext(): Promise<Context> {
 
   const { fills: withCash, days } = applyCash(fills, opening);
   const now = Date.now();
-  const trades: TradeView[] = buildTrades(withCash).map(t => {
+  // Today in ET: positions whose option expired before this date get a synthetic close.
+  const etToday = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const trades: TradeView[] = buildTrades(withCash, etToday).map(t => {
     const j = journal.get(t.key);
     const rr = ratings.get(t.key) ?? {};
     const l = lessons.get(t.key);

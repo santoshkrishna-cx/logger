@@ -9,6 +9,7 @@ import { ImportPage } from "./pages/Import";
 import { LessonsPage } from "./pages/Lessons";
 import { LogPage } from "./pages/Log";
 import { LoginPage } from "./pages/Login";
+import { ReconcilePage } from "./pages/Reconcile";
 import { RulesPage } from "./pages/Rules";
 import { SettingsPage } from "./pages/Settings";
 
@@ -25,6 +26,7 @@ export function App() {
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="calendar" element={<CalendarPage />} />
         <Route path="funding" element={<FundingPage />} />
+        <Route path="reconcile" element={<ReconcilePage />} />
         <Route path="rules" element={<RulesPage />} />
         <Route path="import" element={<ImportPage />} />
         <Route path="settings" element={<SettingsPage />} />

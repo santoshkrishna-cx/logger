@@ -39,7 +39,7 @@ export function LogPage() {
   const timeOf = (t: TradeView) => (t.status === "closed" ? (t.closeAt ?? t.openAt) : t.openAt);
   const tagOf = (t: TradeView, date: string) =>
     t.status !== "closed" ? "Open"
-      : t.contract.expiry && t.avgExit === 0 ? "Expired"
+      : t.assumedExpired || (t.contract.expiry && t.avgExit === 0) ? "Expired"
         : (t.carryIn || t.openDate < date) ? "Carried" : "Closed";
 
   return (

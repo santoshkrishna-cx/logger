@@ -126,6 +126,7 @@ tr.clickable:hover td { background: var(--surface-2); }
 .chip.p2 { color: var(--p2); background: var(--p2-bg); }
 .flag { font-size: 12px; border-radius: 999px; padding: 1px 8px; border: 1px solid var(--line-strong); color: var(--muted); white-space: nowrap; }
 .flag.warn { border-color: var(--loss); color: var(--loss); }
+tr.warn td { background: color-mix(in srgb, var(--loss) 8%, transparent); }
 .flag.note { border-color: var(--note-line); background: var(--note-bg); color: var(--note-ink); }
 .flag.done { border-color: var(--win); color: var(--win); }
 

@@ -47,6 +47,7 @@ export interface Trade {
   fills: FillWithState[];
   carryIn: boolean;
   status: TradeStatus;
+  assumedExpired: boolean; // closed by a synthetic expiry fill, not yet confirmed by an IBKR report row
   openAt: string;
   openDate: string;
   closeAt: string | null;

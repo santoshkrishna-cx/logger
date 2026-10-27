@@ -50,8 +50,14 @@ export function applyCash(fills: Fill[], opening: OpeningCash): { fills: FillWit
 /**
  * A trade = every fill in one contract in one account from when the position leaves zero
  * until it returns to zero. Fills that close a position opened before the data starts form a carry-in.
+ *
+ * With `today` set, a position still open after its option's expiry date gets a synthetic
+ * zero-price close on that date (IBKR's expiry book-trade often arrives late or not at all,
+ * which left expired contracts counted as open and their loss on no day). The synthetic fill
+ * exists only in memory: once the real expiry row is ingested the position closes itself and
+ * the synthetic one is no longer generated.
  */
-export function buildTrades(fills: FillWithState[]): Trade[] {
+export function buildTrades(fills: FillWithState[], today?: string): Trade[] {
   const groups = new Map<string, FillWithState[]>();
   for (const f of fills) {
     const k = `${f.account}|${f.conid}`;
@@ -82,12 +88,48 @@ export function buildTrades(fills: FillWithState[]): Trade[] {
       cur.fills.push({ ...f, positionAfter: pos });
       if (pos === 0) { trades.push(finish(cur.fills, false, 0)); cur = null; }
     }
-    if (cur) trades.push(finish(cur.fills, cur.carryIn, cur.carryIn ? 0 : pos));
+    if (cur) {
+      const synth = !cur.carryIn && pos !== 0 && today ? expiryClose(cur.fills, pos, today) : null;
+      if (synth) {
+        cur.fills.push(synth);
+        trades.push(finish(cur.fills, false, 0, true));
+      } else {
+        trades.push(finish(cur.fills, cur.carryIn, cur.carryIn ? 0 : pos));
+      }
+    }
   }
   return trades.sort((a, b) => (a.openAt < b.openAt ? -1 : 1));
 }
 
-function finish(fs: FillWithState[], carryIn: boolean, pos: number): Trade {
+/** The zero-price closing fill for a position whose option contract expired before `today`. */
+function expiryClose(fs: FillWithState[], pos: number, today: string): FillWithState | null {
+  const first = fs[0];
+  const expiry = parseContract(first.description).expiry;
+  if (!expiry || expiry >= today) return null;
+  // Entry basis at IBKR's FIFO convention (trade price, commission excluded).
+  const entries = fs.filter(f => f.side === first.side);
+  const eQty = entries.reduce((s, f) => s + Math.abs(f.quantity), 0);
+  const basis = eQty ? entries.reduce((s, f) => s + Math.abs(f.quantity) * f.price, 0) / eQty : null;
+  const last = fs[fs.length - 1];
+  return {
+    ...first,
+    id: `assumed-expiry_${first.account}_${first.conid}_${expiry}`,
+    executedAt: `${expiry}T16:15:00`,
+    tradeDate: expiry,
+    side: pos > 0 ? "SELL" : "BUY",
+    quantity: -pos,
+    price: 0,
+    commission: 0,
+    netCash: 0,
+    realizedPnl: basis === null ? null : r2(-pos * basis * first.multiplier),
+    openClose: "C",
+    positionAfter: 0,
+    cashAfter: last.cashAfter,
+    cashDelta: last.cashDelta
+  };
+}
+
+function finish(fs: FillWithState[], carryIn: boolean, pos: number, assumedExpired = false): Trade {
   const first = fs[0];
   const last = fs[fs.length - 1];
   const status = pos === 0 ? "closed" : "open";
@@ -120,6 +162,7 @@ function finish(fs: FillWithState[], carryIn: boolean, pos: number): Trade {
     fills: fs,
     carryIn,
     status,
+    assumedExpired,
     openAt: first.executedAt,
     openDate: first.tradeDate,
     closeAt: status === "closed" ? last.executedAt : null,

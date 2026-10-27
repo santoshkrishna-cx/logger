@@ -24,6 +24,7 @@ export function Layout({ me }: { me: Me }) {
             {link("/analytics", "Analytics")}
             {link("/calendar", "Calendar")}
             {link("/funding", "Funding")}
+            {link("/reconcile", "Reconcile")}
             {link("/rules", "Rules")}
             {link("/import", "Import")}
             {link("/settings", "Settings")}

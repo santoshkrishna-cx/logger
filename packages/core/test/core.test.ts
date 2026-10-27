@@ -129,3 +129,55 @@ describe("parseFlex funding (cash transactions and transfers)", () => {
     expect(by.T1).toMatchObject({ category: "transfer_in", amount: 5000, counterparty: "U0000000" });
   });
 });
+
+describe("assumed expiry (option expired with the position still open)", () => {
+  const open: Fill = {
+    id: "x1", account: "anilsub02", conid: "900", symbol: "SPXW  261023C06000000", underlying: "SPX",
+    description: "SPXW 23OCT26 6000 C", assetClass: "OPT", multiplier: 100, executedAt: "2026-10-22T10:00:00",
+    tradeDate: "2026-10-22", side: "BUY", quantity: 2, price: 1.5, commission: -1, netCash: -301, realizedPnl: 0, openClose: "O"
+  };
+  const build = (fills: Fill[], today?: string) => buildTrades(applyCash(fills, {}).fills, today);
+
+  it("books a zero-price close on the expiry date once the contract has expired", () => {
+    const [t] = build([open], "2026-10-26");
+    expect(t.status).toBe("closed");
+    expect(t.assumedExpired).toBe(true);
+    expect(t.closeDate).toBe("2026-10-23");
+    expect(t.avgExit).toBe(0);
+    expect(t.realizedPnl).toBe(-300); // the premium paid: 2 x 1.50 x 100
+  });
+  it("leaves the trade open while the contract is still live", () => {
+    const [t] = build([open], "2026-10-23"); // expiry day itself: IBKR's row may still arrive
+    expect(t.status).toBe("open");
+    expect(t.assumedExpired).toBe(false);
+  });
+  it("without today's date nothing is synthesized", () => {
+    const [t] = build([open]);
+    expect(t.status).toBe("open");
+  });
+  it("adds the expired remainder to IBKR-realized partial closes", () => {
+    const partial: Fill = { ...open, id: "x2", executedAt: "2026-10-22T11:00:00", side: "SELL", quantity: -1, price: 2, commission: -1, netCash: 199, realizedPnl: 50, openClose: "C" };
+    const [t] = build([open, partial], "2026-10-26");
+    expect(t.status).toBe("closed");
+    expect(t.assumedExpired).toBe(true);
+    expect(t.realizedPnl).toBe(-100); // +50 on the sold contract, -150 on the one that expired
+  });
+  it("does not invent a close for carry-ins or for contracts without an expiry", () => {
+    const carry: Fill = { ...open, id: "x3", side: "SELL", quantity: -1, openClose: "C" };
+    const [c] = build([carry], "2026-12-01");
+    expect(c.carryIn).toBe(true);
+    expect(c.assumedExpired).toBe(false);
+    const stock: Fill = { ...open, id: "x4", description: "AAPL", symbol: "AAPL", assetClass: "STK" };
+    const [s] = build([stock], "2026-12-01");
+    expect(s.status).toBe("open");
+    expect(s.assumedExpired).toBe(false);
+  });
+  it("yields to the real expiry row once it arrives", () => {
+    const real: Fill = { ...open, id: "x5", executedAt: "2026-10-23T16:20:00", tradeDate: "2026-10-23", side: "SELL", quantity: -2, price: 0, commission: 0, netCash: 0, realizedPnl: -301, openClose: "C" };
+    const [t] = build([open, real], "2026-10-26");
+    expect(t.status).toBe("closed");
+    expect(t.assumedExpired).toBe(false);
+    expect(t.realizedPnl).toBe(-301); // IBKR's own number wins
+    expect(t.fills).toHaveLength(2);  // no synthetic fill added
+  });
+});

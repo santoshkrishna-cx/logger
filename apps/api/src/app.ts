@@ -15,6 +15,7 @@ import { journalRouter } from "./routes/journal.js";
 import { lessonsRouter } from "./routes/lessons.js";
 import { logRouter } from "./routes/log.js";
 import { meRouter } from "./routes/me.js";
+import { reconcileRouter } from "./routes/reconcile.js";
 import { rulesRouter } from "./routes/rules.js";
 import { settingsRouter } from "./routes/settings.js";
 import { syncRouter } from "./routes/sync.js";
@@ -46,6 +47,7 @@ export function createApp() {
   app.use("/api", dashboardRouter);
   app.use("/api", analyticsRouter);
   app.use("/api", calendarRouter);
+  app.use("/api", reconcileRouter);
   app.use("/api", fundingRouter);
   app.use("/api", importsRouter);
   app.use("/api", syncRouter);
