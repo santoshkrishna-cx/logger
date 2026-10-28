@@ -2,7 +2,7 @@ import type { FlexReport, ParsedFill } from "@logger/core";
 import { pool, tx } from "../db.js";
 import { loadAccounts } from "./data.js";
 
-export type Source = "trade-confirmation" | "activity" | "file";
+export type Source = "trade-confirmation" | "activity" | "cash" | "file";
 
 export interface AccountPreview { account: string; newFills: number; alreadyLogged: number; willUpgrade: number; from: string; to: string }
 export interface IngestResult {
@@ -11,6 +11,7 @@ export interface IngestResult {
   unmatched: { ibkrAccount: string; alias: string; fills: number }[];
   added: number;
   upgraded: number;
+  cashAdded: number;
   committed: boolean;
 }
 
@@ -61,7 +62,7 @@ export async function ingest(report: FlexReport, source: Source, opts: { commit:
     per.set(account, p);
   }
 
-  const result: IngestResult = { kind: report.kind, accounts: [...per.values()], unmatched: [...unmatched.values()], added: 0, upgraded: 0, committed: false };
+  const result: IngestResult = { kind: report.kind, accounts: [...per.values()], unmatched: [...unmatched.values()], added: 0, upgraded: 0, cashAdded: 0, committed: false };
   if (!opts.commit) return result;
 
   await tx(async c => {
@@ -129,11 +130,12 @@ export async function ingest(report: FlexReport, source: Source, opts: { commit:
     for (const ct of report.cashTxns) {
       const account = match(ct.ibkrAccount, ct.alias);
       if (!account || !ct.date) continue;
-      await c.query(
+      const r = await c.query(
         `INSERT INTO cash_txns (id, account_code, txn_date, category, amount, currency, counterparty, description, source, raw)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) ON CONFLICT (id) DO NOTHING`,
         [ct.id, account, ct.date, ct.category, ct.amount, ct.currency, ct.counterparty, ct.description, source, JSON.stringify(ct.raw)]
       );
+      if (r.rowCount) result.cashAdded++;
     }
   });
   result.committed = true;

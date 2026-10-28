@@ -18,7 +18,7 @@ function parseAllowed(v: string): Map<string, string> {
   return m;
 }
 
-export interface FlexSource { group: string; name: string; token: string; tradeConfirmQueryId: string; activityQueryId: string }
+export interface FlexSource { group: string; name: string; token: string; tradeConfirmQueryId: string; activityQueryId: string; cashQueryId: string }
 
 /** One Flex-enabled IBKR master per group, built from the environment.
  *  Adding a group: add a line here, set its FLEX_<X>_* env vars, and insert a groups row. */
@@ -28,7 +28,8 @@ function parseFlexSources(): FlexSource[] {
     const token = process.env[`${prefix}TOKEN`] ?? "";
     const tradeConfirmQueryId = process.env[`${prefix}TRADE_CONFIRM_QUERY_ID`] ?? "";
     const activityQueryId = process.env[`${prefix}ACTIVITY_QUERY_ID`] ?? "";
-    if (token && (tradeConfirmQueryId || activityQueryId)) sources.push({ group, name, token, tradeConfirmQueryId, activityQueryId });
+    const cashQueryId = process.env[`${prefix}CASH_QUERY_ID`] ?? "";
+    if (token && (tradeConfirmQueryId || activityQueryId || cashQueryId)) sources.push({ group, name, token, tradeConfirmQueryId, activityQueryId, cashQueryId });
   };
   add("shikharam", "Shikharam LLC", "FLEX_");       // FLEX_TOKEN / FLEX_TRADE_CONFIRM_QUERY_ID / FLEX_ACTIVITY_QUERY_ID
   add("santoshodc", "Santosh ODC", "FLEX_ODC_");    // FLEX_ODC_TOKEN / FLEX_ODC_TRADE_CONFIRM_QUERY_ID / FLEX_ODC_ACTIVITY_QUERY_ID

@@ -9,9 +9,9 @@ interface Preview {
   accounts: { account: string; newFills: number; alreadyLogged: number; willUpgrade: number; from: string; to: string }[];
   unmatched: { ibkrAccount: string; alias: string; fills: number }[];
 }
-interface Runs { configured: { token: boolean; tradeConfirmation: boolean; activity: boolean }; runs: { id: string; kind: string; trigger: string; started_at: string; status: string; fills_added: number; fills_upgraded: number; error: string | null }[] }
+interface Runs { configured: { token: boolean; tradeConfirmation: boolean; activity: boolean; cash: boolean }; runs: { id: string; kind: string; trigger: string; started_at: string; status: string; fills_added: number; fills_upgraded: number; error: string | null }[] }
 
-const KIND: Record<string, string> = { activity: "Activity report", "trade-confirmation": "Trade Confirmation report", file: "File import", unknown: "Report" };
+const KIND: Record<string, string> = { activity: "Activity report", "trade-confirmation": "Trade Confirmation report", cash: "Cash & transfers report", file: "File import", unknown: "Report" };
 
 export function ImportPage() {
   const { me } = useLayout();
@@ -36,8 +36,8 @@ export function ImportPage() {
     onError: (e: Error) => setError(e.message)
   });
   const sync = useMutation({
-    mutationFn: (kind: string) => api.post<Preview>("/api/sync/run", { kind }),
-    onSuccess: r => { setMessage(`Sync finished: ${r.added} new, ${r.upgraded} upgraded.`); refresh(); },
+    mutationFn: (kind: string) => api.post<Preview & { cashAdded?: number }>("/api/sync/run", { kind }),
+    onSuccess: r => { setMessage(`Sync finished: ${r.added} new, ${r.upgraded} upgraded${r.cashAdded ? `, ${r.cashAdded} cash transaction${r.cashAdded === 1 ? "" : "s"}` : ""}.`); refresh(); },
     onError: (e: Error) => { setError(e.message); refresh(); }
   });
   const owner = (code: string) => me.accounts.find((a: Me["accounts"][number]) => a.code === code)?.ownerName ?? code;
@@ -54,10 +54,11 @@ export function ImportPage() {
           {cfg && !(cfg.token && cfg.tradeConfirmation && cfg.activity) && (
             <p className="error">The sync isn’t fully set up: {[!cfg.token && "Flex token", !cfg.tradeConfirmation && "Trade Confirmation query ID", !cfg.activity && "Activity query ID"].filter(Boolean).join(", ")} missing in the server environment.</p>
           )}
-          <p className="muted" style={{ fontSize: 14 }}>Trade Confirmation runs every 15 minutes in the session. Activity runs at 6:00 ET and fills in IBKR’s realized P&amp;L, opening cash and account value.</p>
+          <p className="muted" style={{ fontSize: 14 }}>Trade Confirmation runs every 15 minutes in the session. Activity runs at 6:00 ET and fills in IBKR’s realized P&amp;L, opening cash and account value. Deposits and internal transfers come in daily at 6:10 ET.</p>
           <div className="controls">
             <button className="btn" disabled={sync.isPending || !cfg?.tradeConfirmation} onClick={() => sync.mutate("trade-confirmation")}>Sync today’s fills now</button>
             <button className="btn" disabled={sync.isPending || !cfg?.activity} onClick={() => sync.mutate("activity")}>Sync last Activity report</button>
+            <button className="btn" disabled={sync.isPending || !cfg?.cash} onClick={() => sync.mutate("cash")}>Sync deposits &amp; transfers</button>
           </div>
         </div>
         <div className="panel">
