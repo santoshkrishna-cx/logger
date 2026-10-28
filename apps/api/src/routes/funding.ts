@@ -60,11 +60,18 @@ fundingRouter.get("/funding", ah(async (req, res) => {
   const value = rows.some(r => r.value !== null) ? r2(rows.reduce((s, r) => s + (r.value ?? 0), 0)) : null;
   const gain = value === null ? null : r2(value - netInvested);
 
+  const fundingCats = new Set(["deposit", "withdrawal", "transfer_in", "transfer_out"]);
+  const ownerOf = new Map(accounts.map(a => [a.code, a.ownerName]));
+
   res.json({
     scope: account,
     accounts: rows,
     byPerson,
     byGroup,
+    txns: txns
+      .filter(t => codes.has(t.account) && fundingCats.has(t.category))
+      .map(t => ({ ...t, owner: ownerOf.get(t.account) ?? t.account }))
+      .reverse(),
     totals: {
       deposits: r2(rows.reduce((s, r) => s + r.deposits, 0)),
       withdrawals: r2(rows.reduce((s, r) => s + r.withdrawals, 0)),

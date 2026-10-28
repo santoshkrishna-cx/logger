@@ -101,6 +101,7 @@ input[type=text], input[type=number], input[type=date], select, textarea { borde
 .figure .v { font-size: 26px; font-weight: 700; letter-spacing: -.01em; }
 .figure .k { font-size: 13px; color: var(--muted); }
 .figure .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.figure.selected { border-color: var(--accent); }
 .kv { display: grid; grid-template-columns: 1fr auto; gap: 5px 14px; font-size: 14px; }
 .kv span { color: var(--muted); }
 .callout { border-left: 3px solid var(--loss); padding: 8px 12px; background: var(--loss-bg); border-radius: 0 8px 8px 0; margin-bottom: 8px; }
